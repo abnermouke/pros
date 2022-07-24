@@ -57,12 +57,12 @@ return [
         "imageCompressBorder" => 620,
         "imageInsertAlign" => "none",
         "imageUrlPrefix" => "",
-        "imagePathFormat" => "pros/console/builder/ueditor/images",
+        "imagePathFormat" => "pros/ueditor/images",
 
         /* 上传视频配置 */
         "videoActionName" => "uploadmedia",
         "videoFieldName" => "upfile",
-        "videoPathFormat" => "pros/console/builder/ueditor/medias",
+        "videoPathFormat" => "pros/ueditor/medias",
         "videoUrlPrefix" => "",
         "videoMaxSize" => 10737418240,
         "videoAllowFiles" => [
@@ -73,7 +73,7 @@ return [
         /* 上传文件配置 */
         "fileActionName" => "uploadfile",
         "fileFieldName" => "upfile",
-        "filePathFormat" => "pros/console/builder/ueditor/files",
+        "filePathFormat" => "pros/ueditor/files",
         "fileUrlPrefix" => "",
         "fileMaxSize" => 10737418240,
         "fileAllowFiles" => [

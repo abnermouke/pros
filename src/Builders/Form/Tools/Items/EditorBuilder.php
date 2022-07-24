@@ -2,6 +2,8 @@
 
 namespace Abnermouke\Pros\Builders\Form\Tools\Items;
 
+use Abnermouke\EasyBuilder\Library\Currency\ValidateLibrary;
+
 /**
  * 富文本构建器
  * Class EditorBuilder
@@ -20,6 +22,7 @@ class EditorBuilder extends BasicBuilder
      * @param $field
      * @param $guard_name
      * @param string $editor
+     * @throws \Exception
      */
     public function __construct($field, $guard_name, $editor = self::CK_EDITOR)
     {
@@ -36,9 +39,12 @@ class EditorBuilder extends BasicBuilder
      * @Time 2022-07-18 17:21:31
      * @param $url
      * @return EditorBuilder
+     * @throws \Exception
      */
     public function uploader($url)
     {
+        //整理链接
+        $url = $url && ValidateLibrary::link($url) ? $url : ($this->builder['type'] === self::UEDITOR ? route('pros.console.uploader.ueditor') : route('pros.console.uploader'));
         //设置上传链接
         return $this->setParam('upload_url', $url ? $url : '');
     }

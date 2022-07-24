@@ -150,7 +150,7 @@ class UploadService extends BaseService
     public function uploadUeditor($request)
     {
         //获取上传配置
-        $config = config('console_builder.ueditor_upload');
+        $config = config('pros.ueditor_upload');
         //根据操作类型处理
         switch ($action = $request->get('action')) {
             //图片上传

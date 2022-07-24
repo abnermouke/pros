@@ -52,7 +52,7 @@ class CreateProsSystemAmapAreasTable extends Migration
             $table->index('parent_id', 'PARENT_ID');
         });
         //添加表自增长值
-        (new AmapAreaRepository())->setIncrementId(1, AmapAreas::DB_CONNECTION);
+        (new AmapAreaRepository())->setIncrementId(100, AmapAreas::DB_CONNECTION);
         //修改表注释
         (new AmapAreaRepository())->setTableComment('高德地图行政地区表', AmapAreas::DB_CONNECTION);
         //设置默认数据

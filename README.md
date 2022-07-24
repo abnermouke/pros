@@ -85,7 +85,11 @@ protected $middlewareGroups = [
 
 设置默认服务注册  app/Providers/AppServiceProvider.php
 
-```
+```php
+
+    use Illuminate\Support\Facades\Route;
+    use Illuminate\Support\Facades\Schema;
+
 
     public function register()
     {
@@ -108,7 +112,7 @@ protected $middlewareGroups = [
 
 Laravel 6 与 Laravel 7 中配置路由服务 app/Providers/RouteServiceProvider.php
 
-```
+```php
   public function map()
     {
         
@@ -134,7 +138,7 @@ Laravel 6 与 Laravel 7 中配置路由服务 app/Providers/RouteServiceProvider
 
 Laravel 8 中配置路由服务 app/Providers/RouteServiceProvider.php
 
-```
+```php
 public function boot()
 {
     $this->configureRateLimiting();
@@ -152,7 +156,7 @@ public function boot()
 
 增加Csrf例外 app/Http/Middleware/VerifyCsrfToken.php （处理ueditor或其他插件文件上传无法加入csrf验证）
 
-```
+```php
     protected $except = [
         
         //其他例外

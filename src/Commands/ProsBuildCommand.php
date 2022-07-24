@@ -42,7 +42,7 @@ class ProsBuildCommand extends Command
         //创建表
         if ($this->createTables()) {
             //打印信息
-            $this->output->success('Pros 初始化完成！');
+            $this->output->success('Pros 初始化完成，请使用 '.config('app.url').'/pros/console/index 访问，默认用户名：admin，密码：iamadmin!!!');
         }
         //返回成功
         return true;
@@ -141,7 +141,7 @@ class ProsBuildCommand extends Command
             $templates['migrations'][$migration->getFilename().'.php'] = $this->replaceCurrentTemplate($migration->getRealPath());
         }
         //设置直接替换目录
-        $tpls = ['interfaces', 'controllers', 'caches', 'models', 'services'];
+        $tpls = ['interfaces', 'caches', 'models', 'services'];
         //循环替换目录
         foreach ($tpls as $tpl) {
             //替换interface模版
@@ -181,7 +181,6 @@ class ProsBuildCommand extends Command
      */
     private function setTargetFile($file)
     {
-
         //获取文件名称
         $file_name = Arr::last(explode('@', $file->getFilename())).'.php';
         //获取文件目录

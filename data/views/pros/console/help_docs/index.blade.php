@@ -2,7 +2,7 @@
 @extends('pros.console.layouts.master')
 
 {{-- 页面标题 --}}
-@section('title', 'Pros')
+@section('title', '帮助文档')
 
 {{-- 自定义页面样式 --}}
 @section('styles')

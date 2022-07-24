@@ -231,7 +231,7 @@
         <div class="col-xl-2 mb-10">
             <div class="card">
                 <div class="card-body py-5">
-                    <a href="{{ route('pros.console.admins.index') }}" target="_blank" class="d-flex flex-column justify-content-center">
+                    <a href="{{ route('pros.console.systems.configs.index') }}" target="_blank" class="d-flex flex-column justify-content-center">
                         <div class="icon_box mb-5 text-center">
                             <i class="fa fa-cogs fs-3x text-danger"></i>
                         </div>
@@ -243,7 +243,7 @@
         <div class="col-xl-2 mb-10">
             <div class="card">
                 <div class="card-body py-5">
-                    <a href="{{ route('pros.console.admins.index') }}" target="_blank" class="d-flex flex-column justify-content-center">
+                    <a href="{{ route('pros.console.admins.roles.index') }}" target="_blank" class="d-flex flex-column justify-content-center">
                         <div class="icon_box mb-5 text-center">
                             <i class="fa fa-id-card-alt fs-3x text-dark"></i>
                         </div>
@@ -255,7 +255,7 @@
         <div class="col-xl-2 mb-10">
             <div class="card">
                 <div class="card-body py-5">
-                    <a href="{{ route('pros.console.admins.index') }}" target="_blank" class="d-flex flex-column justify-content-center">
+                    <a href="{{ route('pros.console.systems.sms.index') }}" target="_blank" class="d-flex flex-column justify-content-center">
                         <div class="icon_box mb-5 text-center">
                             <i class="fa fa-phone fs-3x text-warning"></i>
                         </div>
