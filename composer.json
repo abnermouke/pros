@@ -1,0 +1,26 @@
+{
+    "name": "abnermouke/pros",
+    "description": "Pros是Abnermouke倾心打造的一款高效的Laravel项目启动方案，无需重复构建基础结构/框架，开发高效，体验优良！",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Abnermouke\\Pros\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Abnermouke",
+            "email": "abnermouke@outlook.com"
+        }
+    ],
+    "require": {
+        "abnermouke/easy-builder": "*",
+        "intervention/image": "*",
+        "maatwebsite/excel": "*",
+        "overtrue/laravel-wechat": "^5.0",
+        "overtrue/laravel-pinyin": "*",
+        "overtrue/easy-sms": "*",
+        "guzzlehttp/guzzle": "^7.4"
+    }
+}
