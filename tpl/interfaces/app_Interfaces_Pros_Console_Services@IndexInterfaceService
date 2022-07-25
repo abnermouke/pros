@@ -5,7 +5,7 @@
  * Originate in Yunni Technology Co Ltd.
  * Date: 2022-07-22
  * Time: 14:45:37
-*/
+ */
 
 namespace App\Interfaces\Pros\Console\Services;
 
@@ -15,15 +15,15 @@ use Abnermouke\EasyBuilder\Module\BaseService;
  * 首页接口逻辑服务容器
  * Class IndexService
  * @package App\Interfaces\Pros\Console\Services
-*/
+ */
 class IndexInterfaceService extends BaseService
 {
 
     /**
-    * 引入父级构造
-    * IndexInterfaceService constructor.
-    * @param bool $pass 是否直接获取结果
-    */
+     * 引入父级构造
+     * IndexInterfaceService constructor.
+     * @param bool $pass 是否直接获取结果
+     */
     public function __construct($pass = false) { parent::__construct($pass); }
 
     /**
@@ -44,18 +44,18 @@ class IndexInterfaceService extends BaseService
             //设置日期信息
             $dates[] = auto_datetime('Y-m-d', strtotime('-'.$i.'day'));
             //添加价格信息
-            $users['insert'][] = rand(30, 300);
-            $users['browser'][] = rand(30, 300);
-            $users['paid'][] = rand(30, 300);
-            $users['charge'][] = rand(30, 300);
-            $users['insert_paid'][] = rand(30, 300);
+            $users['insert'][] = rand(20, 100);
+            $users['browser'][] = rand(200, 400);
+            $users['paid'][] = rand(10, 80);
+            $users['charge'][] = rand(10, 80);
+            $users['insert_paid'][] = rand(5, 80);
             //添加订单信息
-            $orders['pay'][] = rand(100000, 200000)/100;
+            $orders['pay'][] = rand(100000, 150000)/100;
             $orders['total'][] = rand(150000, 300000)/100;
             $orders['charge'][] = rand(100000, 150000)/100;
         }
         //设置最大信息
-        $max = ['user' => 350, 'order' => 3200];
+        $max = ['user' => 450, 'order' => 3200];
         //返回信息
         return $this->success(['statistics' => compact('dates', 'users', 'orders', 'max')]);
     }
