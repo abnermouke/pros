@@ -20,7 +20,7 @@ class BuilderProvider
     public const THEME_COLORS = [
         'theme_alias' => ['primary', 'info', 'success', 'danger', 'warning', 'dark'],
         'theme_names' => ['primary' => '明亮', 'info' => '强调', 'success' => '成功', 'danger' => '错误', 'warning' => '警告', 'dark' => '暗色'],
-        'status' => [BaseModel::STATUS_ENABLED => 'success', BaseModel::STATUS_DISABLED => 'warning', BaseModel::STATUS_VERIFYING => 'primary', BaseModel::STATUS_VERIFY_FAILED => 'info', BaseModel::STATUS_DELETED => 'danger'],
+        'status' => [BaseModel::STATUS_ENABLED => 'success', BaseModel::STATUS_DISABLED => 'warning', BaseModel::STATUS_VERIFYING => 'info', BaseModel::STATUS_VERIFY_FAILED => 'danger', BaseModel::STATUS_DELETED => 'dark'],
         'switch' => [BaseModel::SWITCH_ON => 'success', BaseModel::SWITCH_OFF => 'danger']
     ];
 

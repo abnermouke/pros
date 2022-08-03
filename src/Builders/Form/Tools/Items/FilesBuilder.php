@@ -25,7 +25,7 @@ class FilesBuilder extends BasicBuilder
         //引入父级构造
         parent::__construct('files', $field, $guard_name);
         //设置基础信息
-        $this->uploader()->dictionary()->accept()->multiple();
+        $this->uploader()->dictionary()->accept()->multiple()->single(false);
     }
 
     /**
@@ -59,6 +59,19 @@ class FilesBuilder extends BasicBuilder
         return $this->setParam('dictionary', $dictionary);
     }
 
+    /**
+     * 设仅上传一个文件
+     * @Author Abnermouke <abnermouke@outlook.com>
+     * @Originate in Abnermouke's MBP
+     * @Time 2022-08-03 01:31:54
+     * @param bool $single
+     * @return FilesBuilder
+     */
+    public function single($single = true)
+    {
+        //设仅上传一个文件
+        return $this->setParam('single', $single)->multiple(false);
+    }
 
     /**
      * 设置允许的文件类型

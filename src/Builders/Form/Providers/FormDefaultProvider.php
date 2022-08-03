@@ -171,12 +171,12 @@ class FormDefaultProvider
      * @return $this
      * @throws \Exception
      */
-    public function setSubmit($query_url, $confirm_tip = '信息提交后将立即生效，请确认继续操作？', $guard_name = '立即提交', $query_method = 'post', $theme = 'success')
+    public function setSubmit($query_url, $confirm_tip = '信息提交后将立即生效，请确认继续操作？', $guard_name = '立即提交', $after = 'reload', $query_method = 'post', $theme = 'success')
     {
         //判断链接可用性
         if (ValidateLibrary::link($query_url)) {
             //设置按钮信息
-            $button = (new AjaxBuilder($query_url, $guard_name))->theme($theme)->confirmed($confirm_tip)->query($query_url, $query_method)->get();
+            $button = (new AjaxBuilder($query_url, $guard_name))->theme($theme)->confirmed($confirm_tip)->query($query_url, $query_method)->after_redirect($after)->get();
             //整理基础信息
             $params = Arr::except($button, ($keys = ['type', 'theme', 'icon', 'confirm_tip']));
             //设置按钮信息
@@ -286,12 +286,22 @@ class FormDefaultProvider
                 case 'image_checkbox':
                 case 'normal_checkbox':
                 case 'files':
-                case 'pictures':
                 case 'tags':
+                case 'values':
                     //判断内容是否存在
                     if ($data = data_get($this->builder['data'], $field, false)) {
                         //设置默认值
                         $config['default_value'] = object_2_array($data);
+                    }
+                    break;
+                case 'dynamic':
+                case 'select':
+                    //设置默认信息
+                    $config['default_value'] = data_get($this->builder['data'], $field, $config['default_value']);
+                    //判断是否多选
+                    if ($config['multiple']) {
+                        //设置默认值
+                        $config['default_value'] = object_2_array($config['default_value']);
                     }
                     break;
                 case 'input':
@@ -305,6 +315,20 @@ class FormDefaultProvider
                     //设置默认信息
                     $config['default_value'] = $default_value;
                     break;
+                case 'pictures':
+                    //判断宽度是否大于200
+                    if ((int)$config['width'] > 200) {
+                        //更改box宽度
+                        $config['box_width'] = 200;
+                        //更改高度
+                        $config['box_height'] = (int)((int)$config['height'] * (200/(int)$config['width']));
+                    }
+                    //判断内容是否存在
+                    if ($data = data_get($this->builder['data'], $field, false)) {
+                        //设置默认值
+                        $config['default_value'] = object_2_array($data);
+                    }
+                    break;
                 case 'image':
                     //判断宽度是否大于200
                     if ((int)$config['width'] > 200) {
@@ -315,6 +339,11 @@ class FormDefaultProvider
                     }
                     //设置默认信息
                     $config['default_value'] = data_get($this->builder['data'], $field, $config['default_value']);
+                    //判断是否设置描述
+                    if (!$config['description'] && $config['cropper']) {
+                        //设置默认提示
+                        $config['description'] = '建议尺寸：'.$config['width'].' x '.$config['height'].' 及其等比例放大/缩小尺寸，允许文件类型：'.$config['accept'].'，预览图片将进行压缩，如显示较模糊请忽略。';
+                    }
                     break;
                 default:
                     //设置默认信息

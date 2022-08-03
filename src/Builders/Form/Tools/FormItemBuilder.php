@@ -9,9 +9,11 @@ use Abnermouke\Pros\Builders\Form\Tools\Items\FilesBuilder;
 use Abnermouke\Pros\Builders\Form\Tools\Items\IconBuilder;
 use Abnermouke\Pros\Builders\Form\Tools\Items\ImageBuilder;
 use Abnermouke\Pros\Builders\Form\Tools\Items\InputBuilder;
+use Abnermouke\Pros\Builders\Form\Tools\Items\linkageBuilder;
 use Abnermouke\Pros\Builders\Form\Tools\Items\PicturesBuilder;
 use Abnermouke\Pros\Builders\Form\Tools\Items\RadioBuilder;
 use Abnermouke\Pros\Builders\Form\Tools\Items\SelectBuilder;
+use Abnermouke\Pros\Builders\Form\Tools\Items\SpecificationsBuilder;
 use Abnermouke\Pros\Builders\Form\Tools\Items\SwitchBuilder;
 use Abnermouke\Pros\Builders\Form\Tools\Items\TagsBuilder;
 use Abnermouke\Pros\Builders\Form\Tools\Items\TextareaBuilder;
@@ -250,13 +252,47 @@ class FormItemBuilder
      * @Time 2022-07-19 16:17:21
      * @param $field
      * @param $guard_name
-     * @return SelectBuilder
+     * @return ValuesBuilder
      * @throws \Exception
      */
       public function values($field, $guard_name)
       {
           //设置构建对象
           $this->items[] = $builder = new ValuesBuilder($field, $guard_name);
+          //返回构建器对象
+          return $builder;
+      }
+
+    /**
+     * 设置联动内容项构建器
+     * @Author Abnermouke <abnermouke@outlook.com>
+     * @Originate in Abnermouke's MBP
+     * @Time 2022-07-29 16:22:30
+     * @param $field
+     * @param $guard_name
+     * @return linkageBuilder
+     */
+      public function linkage($field, $guard_name)
+      {
+          //设置构建对象
+          $this->items[] = $builder = new linkageBuilder($field, $guard_name);
+          //返回构建器对象
+          return $builder;
+      }
+
+    /**
+     * 设置商品规格内容项构建器
+     * @Author Abnermouke <abnermouke@outlook.com>
+     * @Originate in Abnermouke's MBP
+     * @Time 2022-07-29 16:22:30
+     * @param $field
+     * @param $guard_name
+     * @return SpecificationsBuilder
+     */
+      public function specifications($field, $guard_name)
+      {
+          //设置构建对象
+          $this->items[] = $builder = new SpecificationsBuilder($field, $guard_name);
           //返回构建器对象
           return $builder;
       }

@@ -25,7 +25,7 @@
         </div>
     </div>
     <input type="file" accept="{{ $accept }}" {{  $multiple ? 'multiple' : '' }} class="d-none" id="pros_form_{{ $sign }}_item_{{ $field }}_uploader" value="" autocomplete="off" {{ $readonly ? 'readonly' : '' }} {{ $disabled ? 'disabled' : '' }}>
-    <input type="hidden" id="pros_form_{{ $sign }}_item_{{ $field }}" autocomplete="off" value="{{ json_encode($default_value) }}">
+    <input type="hidden" id="pros_form_{{ $sign }}_item_{{ $field }}" data-single="{{ $single ? 1 : 0 }}" autocomplete="off" value="{{ json_encode($default_value) }}">
     <button id="pros_form_{{ $sign }}_item_{{ $field }}_trigger" class="btn btn-light-primary btn-sm me-3 my-3">选择文件</button>
     <span class="text-muted">文件右侧可对当前文件进行预览、排序、删除等操作，展示顺序以实际上传速度为准。</span>
     @if($description)

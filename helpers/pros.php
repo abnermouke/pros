@@ -188,3 +188,35 @@ if (!function_exists('pros_console_abort_error'))
         return response()->view('vendor.pros.console.errors', compact('code', 'message', 'redirect_uri'));
     }
 }
+
+if (!function_exists('pros_console_action_condition')) {
+    /**
+     * 设置构建器Action显示条件
+     * @Author Abnermouke <abnermouke@outlook.com>
+     * @Originate in Abnermouke's MBP
+     * @Time 2022-07-25 23:20:38
+     * @param $conditions
+     * @param $row
+     * @return bool
+     */
+    function pros_console_action_condition($conditions, $row)
+    {
+        //初始化是否限制
+        $show = true;
+        //判断是否存在条件
+        if ($conditions) {
+            //循环条件
+            foreach ($conditions as $filed => $values) {
+                //整理信息
+                $value = data_get($row, $filed, false);
+                //判断值是否存在信息
+                if ((is_bool($value) && !$value) || !in_array($value, object_2_array($values))) {
+                    //设置限制显示
+                    $show = false;
+                }
+            }
+        }
+        //返回是否限制
+        return $show;
+    }
+}

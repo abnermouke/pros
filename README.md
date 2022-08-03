@@ -6,7 +6,7 @@
 
 ----
 
-最后更新时间：2022年07月25日，持续更新中！！！
+最后更新时间：2022年08月03日，持续更新中！！！
 
 ---
 
@@ -187,6 +187,45 @@ public function boot()
 composer dump-autoload
 ```
 
+- 设置任务调度（app/Console/Kernel.php）
+
+```php
+
+    protected $commands = [
+    
+        //
+        
+        
+        \App\Console\Commands\Pros\Tasks\TemporaryFileCommand::class
+    ];
+
+  
+    protected function schedule(Schedule $schedule)
+    {
+      
+        //
+        
+        //每五分钟清除过期文件
+        $schedule->command('temporary_file:clear')->everyFiveMinutes();
+    }
+```
+
+- 增加 migration 对pros的支持 (database/migrations/fillings)
+
+```php
+
+public function up()
+    {
+
+        //执行默认 Abnermouke 相关构建模块迁移
+        $this->migrate('abnermouke', 'Abnermouke');
+
+        //执行其他指定模块迁移
+        $this->migrate('pros', 'Pros');
+
+    }
+
+```
 
 ### Usage 使用方法
 
@@ -201,6 +240,16 @@ php artisan builder:pros
 2022.07.26 - 项目发布
 
 - 全新构建结构，帮助开发者快速启动项目
+
+2022.08.03 - 优化内容与修复已知问题
+
+- 新增Form表单构建 Values 模块（参数、属性）
+- 新增Form表单构建 Specifications 模块（商品规格）
+- 新增Form表单构建 Linkage 模块（N级联动）
+- 新增Form表单构建 Dynamic 模块（动态选择组件，select数据来自远程json链接，可设置触发创建按钮，编辑时快速新增内容项并自动刷新）
+- 新增Form表单构建 select 选择框模块可多选功能，调用builder的multiple方法即可
+- 其他已知问题修复
+
 
 ## License
 

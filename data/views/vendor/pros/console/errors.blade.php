@@ -10,7 +10,7 @@ Contact: abnermouke@outlook.com
     $console_configs = (new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get();
 @endphp
 <head>
-    <title>登录 - {{ $console_configs['APP_TITLE'] }}</title>
+    <title>{{ $code }} - {{ $console_configs['APP_TITLE'] }}</title>
     <meta charset="utf-8" />
     <meta name="description" content="{{ $console_configs['APP_DESCRIPTION'] }}" />
     <meta name="keywords" content="{{ implode(',', object_2_array($console_configs['APP_KEYWORDS'])) }}" />

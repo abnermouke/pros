@@ -6,7 +6,7 @@
         @endif
     </label>
     <div class="fv-row" id="pros_form_{{ $sign }}_item_{{ $field }}_upload_box">
-        <div class="bg-light-{{ \Illuminate\Support\Arr::random(data_get($__colors__, 'theme_alias', ['primary'])) }} mb-2" style="{{ $default_value ? 'background: url(\''.$default_value.'\');' : '' }}background-size: 100%;background-repeat: no-repeat;height: {{ $box_height }}px;width: {{ $box_width }}px" id="pros_form_{{ $sign }}_item_{{ $field }}_wrapper">
+        <div class="bg-light-{{ \Illuminate\Support\Arr::random(data_get($__colors__, 'theme_alias', ['primary'])) }} mb-2" style="{{ $default_value ? 'background: url(\''.$default_value.'\');' : '' }}background-size: 100%;background-repeat: no-repeat;background-position: center;height: {{ $box_height }}px;width: {{ $box_width }}px" id="pros_form_{{ $sign }}_item_{{ $field }}_wrapper">
         </div>
         <div class="fv-row mt-1">
             <input type="file" accept="{{ $accept }}" data-width="{{ $width }}" data-height="{{ $height }}" data-cropper="{{ $cropper ? 1 : 0 }}"  class="d-none" id="pros_form_{{ $sign }}_item_{{ $field }}_uploader" value="" autocomplete="off" {{ $readonly ? 'readonly' : '' }} {{ $disabled ? 'disabled' : '' }}>

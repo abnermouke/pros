@@ -190,6 +190,29 @@ $.form_builder = {
                         //获取值
                         target_value = JSON.stringify(target_value);
                         break;
+                    case 'dynamic':
+                    case 'select':
+                        //获取值
+                        target_value = target_object.val();
+                        //判断是否为多选
+                        if (target_object.prop('multiple')) {
+                            //设置值
+                            var target_values = [];
+                            //判断信息
+                            if (typeof target_value !== 'undefined' && target_value.length > 0) {
+                                //循环内容
+                                $.each(target_value, function (i, item) {
+                                    //新增字段
+                                    target_values.push(checkNumberOrString(item));
+                                });
+                            }
+                            //设置值
+                            target_value = JSON.stringify(target_values);
+                        } else {
+                            //处理值
+                            target_value = checkNumberOrString(target_value);
+                        }
+                        break;
                     default:
                         //设置触发结果
                         target_value = checkNumberOrString(target_object.val());
@@ -260,6 +283,7 @@ $.form_builder = {
                     new Tagify(target_object[0], tagify_options);
                     break;
                 case 'select':
+                case 'dynamic':
                     //设置参数
                     var select2_options = {
                         placeholderOption: "first",
@@ -272,6 +296,20 @@ $.form_builder = {
                     }
                     //设置select2
                     target_object.select2(select2_options);
+                    break;
+                case 'specs':
+                    //设置参数
+                    var select2_options = {
+                        placeholderOption: "first",
+                        allowClear: true
+                    };
+                    //判断是否为modal
+                    if (typeof (dropdown_modal_id) !== 'undefined' && dropdown_modal_id.length > 0) {
+                        //添加参数
+                        select2_options.dropdownParent = $("#"+dropdown_modal_id);
+                    }
+                    //设置select2
+                    $("#pros_form_"+sign+"_item_specs_"+field+"_spec_selector").select2(select2_options);
                     break;
                 case 'icon':
                     //设置参数
@@ -457,11 +495,11 @@ $.form_builder = {
                     }, preview_trigger = function () {
                         //设置预览触发
                         upload_items.find('.pros_form_'+sign+'_item_'+field+'_upload_item_previewer').off().on('click', function () {
-                           //新开窗口访问
+                            //新开窗口访问
                             window.open($(this).parents('.pros_form_'+sign+'_item_'+field+'_upload_item').attr('data-link'));
                         });
                     };
-                     //判断对象是否存在
+                    //判断对象是否存在
                     if (typeof target_object !== 'undefined') {
                         //设置点击触发上传
                         trigger_btn.on('click', function () {
@@ -498,6 +536,11 @@ $.form_builder = {
                                     success: function (res) {
                                         //判断上传状态
                                         if (res.state) {
+                                            //判断是否为单一文件上传
+                                            if (parseInt(target_object.attr('data-single')) === 1) {
+                                                //移除已存在信息
+                                                upload_items.find('.pros_form_'+sign+'_item_'+field+'_upload_item').remove();
+                                            }
                                             //添加内容
                                             upload_items.append(upload_item_template.replaceAll('__LINK__', res.data['link']).replaceAll('__FILE_NAME__', res.data['file_info']['basename']));
                                             //重置结果
@@ -572,17 +615,160 @@ $.form_builder = {
                     }
                     //设置上传触发
                     input_uploader.on('change', function (file) {
+                        //判断是否需要裁剪
+                        if (need_copper === 1) {
+                            //引入文件读取实例
+                            var reader = new FileReader(), modal = $("#pros_form_"+sign+"_image_cropper_modal_for_"+field), file_name = file.target.files[0]['name'], uploader_func = function (file_content, type = 'base64') {
+                                //整理基础信息
+                                var uploadData = new FormData(), confirm_crop = modal.find('div.modal-footer button.confirm-to-crop'), loading = loadingStart(confirm_crop, modal[0], '正在上传图片...');
+                                //整理信息
+                                uploadData.append('file', file_content);
+                                uploadData.append('file_type', type);
+                                uploadData.append('dictionary', _this.attr('data-upload-dictionary'));
+                                uploadData.append('origin_name', file.target.files[0]['name']);
+                                //开始请求上传
+                                $.ajax({
+                                    type: 'post',
+                                    url: _this.attr('data-upload-url'),
+                                    data: uploadData,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function (res) {
+                                        //判断上传状态
+                                        if (res.state) {
+                                            //添加内容
+                                            upload_items.append(upload_item_template.replaceAll('__LINK__', res.data['link']).replaceAll('__FILE_NAME__', res.data['file_info']['basename']));
+                                            //重置结果
+                                            file_input_trigger();
+                                            remove_trigger();
+                                            //隐藏弹窗
+                                            modal_object.hide();
+                                        } else {
+                                            //提示信息
+                                            alertToast(res.msg, 2000, 'error', '图片上传');
+                                        }
+                                    },
+                                    error: function (res) {
+                                        //提示信息
+                                        alertToast('网络错误，请稍后再试', 2000, 'error', '图片上传');
+                                    }
+                                });
+                                //关闭弹窗
+                                loadingStop(loading, confirm_crop);
+                            };
                             //判断是否需要裁剪
-                            if (need_copper === 1) {
-                                //引入文件读取实例
-                                var reader = new FileReader(), modal = $("#pros_form_"+sign+"_image_cropper_modal_for_"+field), file_name = file.target.files[0]['name'], uploader_func = function (file_content, type = 'base64') {
-                                    //整理基础信息
-                                    var uploadData = new FormData(), confirm_crop = modal.find('div.modal-footer button.confirm-to-crop'), loading = loadingStart(confirm_crop, modal[0], '正在上传图片...');
+                            if (file_name.toLowerCase().indexOf('.gif') > -1) {
+                                //上传图片
+                                uploader_func(file.target.files[0], 'binary');
+                            } else {
+                                //判断是否加载成功
+                                reader.onload = (function (e) {
+                                    //引入样式文件
+                                    createExtraCss(form.attr('data-source-path')+'/cropper/cropper.bundle.css', function () {
+                                        //引入文件信息(JS)
+                                        createExtraJs(form.attr('data-source-path')+'/cropper/cropper.bundle.js', typeof (Cropper), function () {
+                                            //获取图片实例
+                                            var img = modal.find("#pros_form_"+sign+"_image_cropper_img_for_"+field);
+                                            //触发时间
+                                            modal.on('shown.bs.modal', function () {
+                                                //判断图片是否加载完成
+                                                img[0].onload = function () {
+                                                    //实例化cropper
+                                                    var cropper = new Cropper(img[0], {
+                                                        viewMode: 2,
+                                                        dragMode: 'move',
+                                                        aspectRatio: parseInt(input_uploader.attr('data-width'))/parseInt(input_uploader.attr('data-height')),
+                                                        mouseWheelZoom: false,
+                                                        autoCropArea: 0.5,
+                                                        dragCrop: false,
+                                                        zoomOnWheel: false
+                                                    });
+                                                    //触发关闭弹窗事件
+                                                    modal.on('hidden.bs.modal', function () {
+                                                        //销毁信息
+                                                        cropper.destroy();
+                                                        //删除弹窗
+                                                        modal.remove();
+                                                        //删除遮罩
+                                                        $('.modal-backdrop').remove();
+                                                    });
+                                                    //触发确认裁剪事件
+                                                    modal.find('div.modal-footer button.confirm-to-crop').on('click', function () {
+                                                        //获取截取数据
+                                                        var cropper_base64 = cropper.getCroppedCanvas({
+                                                            imageSmoothingQuality: 'high'
+                                                        }).toDataURL('image/png');
+                                                        //上传图片
+                                                        uploader_func(cropper_base64, 'image_base64');
+                                                    });
+                                                    //设置按钮触发
+                                                    modal.find("#pros_form_"+sign+"_image_cropper_buttons_for_"+field+" button").on('click', function () {
+                                                        //判断处理方法
+                                                        switch ($(this).attr('data-method')) {
+                                                            case 'cropper.zoom(0.1)':
+                                                                cropper.zoom(0.1);
+                                                                break;
+                                                            case 'cropper.zoom(-0.1)':
+                                                                cropper.zoom(-0.1);
+                                                                break;
+                                                            case 'cropper.move(-10, 0)':
+                                                                cropper.move(-10, 0);
+                                                                break;
+                                                            case 'cropper.move(10, 0)':
+                                                                cropper.move(10, 0);
+                                                                break;
+                                                            case 'cropper.move(0, -10)':
+                                                                cropper.move(0, -10);
+                                                                break;
+                                                            case 'cropper.move(0, 10)':
+                                                                cropper.move(0, 10);
+                                                                break;
+                                                            case 'cropper.rotate(45)':
+                                                                cropper.rotate(45);
+                                                                break;
+                                                            case 'cropper.rotate(-45)':
+                                                                cropper.rotate(-45);
+                                                                break;
+                                                            case 'cropper.scaleX(-1)':
+                                                                cropper.scaleX(-1);
+                                                                break;
+                                                            case 'cropper.scaleY(-1)':
+                                                                cropper.scaleY(-1);
+                                                                break;
+                                                            default:
+                                                                cropper.reset()
+                                                                break;
+                                                        }
+                                                    });
+                                                };
+                                                //设置cropper
+                                                img.attr('src', e.target.result).attr('alt', file.target.files[0]['name']);
+                                            });
+                                            //显示弹窗
+                                            modal_object = new bootstrap.Modal(modal[0], {backdrop: 'static', keyboard: false});
+                                            modal_object.show();
+                                        });
+                                    });
+                                });
+                                //获取数据流
+                                reader.readAsDataURL(file.target.files[0]);
+                            }
+                        } else {
+                            //整理信息
+                            var upload_files = file.target.files;
+                            //判断文件信息
+                            if (typeof (upload_files) !== 'undefined' && !$.isEmptyObject(upload_files)) {
+                                //加载loading
+                                var loading = loadingStart(trigger_btn, _this[0], '正在上传图片...');
+                                //循环文件信息
+                                $.each(upload_files, function (i, item) {
+                                    //整理上传信息
+                                    var uploadData = new FormData();
                                     //整理信息
-                                    uploadData.append('file', file_content);
-                                    uploadData.append('file_type', type);
+                                    uploadData.append('file', item);
+                                    uploadData.append('file_type', 'binary');
                                     uploadData.append('dictionary', _this.attr('data-upload-dictionary'));
-                                    uploadData.append('origin_name', file.target.files[0]['name']);
+                                    uploadData.append('origin_name', file.target.files[i]['name']);
                                     //开始请求上传
                                     $.ajax({
                                         type: 'post',
@@ -598,166 +784,25 @@ $.form_builder = {
                                                 //重置结果
                                                 file_input_trigger();
                                                 remove_trigger();
-                                                //隐藏弹窗
-                                                modal_object.hide();
                                             } else {
                                                 //提示信息
-                                                alertToast(res.msg, 2000, 'error', '图片上传');
+                                                alertToast(res.msg, 2000, 'error', '文件上传');
                                             }
                                         },
                                         error: function (res) {
                                             //提示信息
-                                            alertToast('网络错误，请稍后再试', 2000, 'error', '图片上传');
+                                            alertToast('网络错误，请稍后再试', 2000, 'error', '文件上传');
                                         }
                                     });
-                                    //关闭弹窗
-                                    loadingStop(loading, confirm_crop);
-                                };
-                                //判断是否需要裁剪
-                                if (file_name.toLowerCase().indexOf('.gif') > -1) {
-                                    //上传图片
-                                    uploader_func(file.target.files[0], 'binary');
-                                } else {
-                                    //判断是否加载成功
-                                    reader.onload = (function (e) {
-                                        //引入样式文件
-                                        createExtraCss(form.attr('data-source-path')+'/cropper/cropper.bundle.css', function () {
-                                            //引入文件信息(JS)
-                                            createExtraJs(form.attr('data-source-path')+'/cropper/cropper.bundle.js', typeof (Cropper), function () {
-                                                //获取图片实例
-                                                var img = modal.find("#pros_form_"+sign+"_image_cropper_img_for_"+field);
-                                                //触发时间
-                                                modal.on('shown.bs.modal', function () {
-                                                    //判断图片是否加载完成
-                                                    img[0].onload = function () {
-                                                        //实例化cropper
-                                                        var cropper = new Cropper(img[0], {
-                                                            viewMode: 2,
-                                                            dragMode: 'move',
-                                                            aspectRatio: parseInt(input_uploader.attr('data-width'))/parseInt(input_uploader.attr('data-height')),
-                                                            mouseWheelZoom: false,
-                                                            autoCropArea: 0.5,
-                                                            dragCrop: false,
-                                                            zoomOnWheel: false
-                                                        });
-                                                        //触发关闭弹窗事件
-                                                        modal.on('hidden.bs.modal', function () {
-                                                            //销毁信息
-                                                            cropper.destroy();
-                                                            //删除弹窗
-                                                            modal.remove();
-                                                        });
-                                                        //触发确认裁剪事件
-                                                        modal.find('div.modal-footer button.confirm-to-crop').on('click', function () {
-                                                            //获取截取数据
-                                                            var cropper_base64 = cropper.getCroppedCanvas({
-                                                                imageSmoothingQuality: 'high'
-                                                            }).toDataURL('image/png');
-                                                            //上传图片
-                                                            uploader_func(cropper_base64, 'image_base64');
-                                                        });
-                                                        //设置按钮触发
-                                                        modal.find("#pros_form_"+sign+"_image_cropper_buttons_for_"+field+" button").on('click', function () {
-                                                            //判断处理方法
-                                                            switch ($(this).attr('data-method')) {
-                                                                case 'cropper.zoom(0.1)':
-                                                                    cropper.zoom(0.1);
-                                                                    break;
-                                                                case 'cropper.zoom(-0.1)':
-                                                                    cropper.zoom(-0.1);
-                                                                    break;
-                                                                case 'cropper.move(-10, 0)':
-                                                                    cropper.move(-10, 0);
-                                                                    break;
-                                                                case 'cropper.move(10, 0)':
-                                                                    cropper.move(10, 0);
-                                                                    break;
-                                                                case 'cropper.move(0, -10)':
-                                                                    cropper.move(0, -10);
-                                                                    break;
-                                                                case 'cropper.move(0, 10)':
-                                                                    cropper.move(0, 10);
-                                                                    break;
-                                                                case 'cropper.rotate(45)':
-                                                                    cropper.rotate(45);
-                                                                    break;
-                                                                case 'cropper.rotate(-45)':
-                                                                    cropper.rotate(-45);
-                                                                    break;
-                                                                case 'cropper.scaleX(-1)':
-                                                                    cropper.scaleX(-1);
-                                                                    break;
-                                                                case 'cropper.scaleY(-1)':
-                                                                    cropper.scaleY(-1);
-                                                                    break;
-                                                                default:
-                                                                    cropper.reset()
-                                                                    break;
-                                                            }
-                                                        });
-                                                    };
-                                                    //设置cropper
-                                                    img.attr('src', e.target.result).attr('alt', file.target.files[0]['name']);
-                                                });
-                                                //显示弹窗
-                                                modal_object = new bootstrap.Modal(modal[0], {backdrop: 'static', keyboard: false});
-                                                modal_object.show();
-                                            });
-                                        });
-                                    });
-                                    //获取数据流
-                                    reader.readAsDataURL(file.target.files[0]);
-                                }
-                            } else {
-                                //整理信息
-                                var upload_files = file.target.files;
-                                //判断文件信息
-                                if (typeof (upload_files) !== 'undefined' && !$.isEmptyObject(upload_files)) {
-                                    //加载loading
-                                    var loading = loadingStart(trigger_btn, _this[0], '正在上传图片...');
-                                    //循环文件信息
-                                    $.each(upload_files, function (i, item) {
-                                        //整理上传信息
-                                        var uploadData = new FormData();
-                                        //整理信息
-                                        uploadData.append('file', item);
-                                        uploadData.append('file_type', 'binary');
-                                        uploadData.append('dictionary', _this.attr('data-upload-dictionary'));
-                                        uploadData.append('origin_name', file.target.files[i]['name']);
-                                        //开始请求上传
-                                        $.ajax({
-                                            type: 'post',
-                                            url: _this.attr('data-upload-url'),
-                                            data: uploadData,
-                                            processData: false,
-                                            contentType: false,
-                                            success: function (res) {
-                                                //判断上传状态
-                                                if (res.state) {
-                                                    //添加内容
-                                                    upload_items.append(upload_item_template.replaceAll('__LINK__', res.data['link']).replaceAll('__FILE_NAME__', res.data['file_info']['basename']));
-                                                    //重置结果
-                                                    file_input_trigger();
-                                                    remove_trigger();
-                                                } else {
-                                                    //提示信息
-                                                    alertToast(res.msg, 2000, 'error', '文件上传');
-                                                }
-                                            },
-                                            error: function (res) {
-                                                //提示信息
-                                                alertToast('网络错误，请稍后再试', 2000, 'error', '文件上传');
-                                            }
-                                        });
-                                    });
-                                    //关闭弹窗
-                                    loadingStop(loading, trigger_btn);
-                                }
+                                });
+                                //关闭弹窗
+                                loadingStop(loading, trigger_btn);
                             }
-                        });
-                        //重置结果
-                        file_input_trigger();
-                        remove_trigger();
+                        }
+                    });
+                    //重置结果
+                    file_input_trigger();
+                    remove_trigger();
                     break;
                 case 'image':
                     //整理信息
@@ -817,8 +862,9 @@ $.form_builder = {
                                             //设置图片地址
                                             wrapper.css({
                                                 'background': 'url('+res.data['link']+')',
-                                                'background-size': 'cover',
+                                                'background-size': '100%',
                                                 'background-repeat': 'no-repeat',
+                                                'background-position': 'center',
                                             });
                                             //判断是否需要裁剪
                                             if (need_copper === 1) {
@@ -877,6 +923,8 @@ $.form_builder = {
                                                         cropper.destroy();
                                                         //删除弹窗
                                                         modal.remove();
+                                                        //删除遮罩
+                                                        $('.modal-backdrop').remove();
                                                     });
                                                     //触发确认裁剪事件
                                                     modal.find('div.modal-footer button.confirm-to-crop').on('click', function () {
@@ -941,6 +989,677 @@ $.form_builder = {
                             }
                         });
                     }
+                    break;
+                case 'specs':
+                    //获取基础数据
+                    // var json_path = _this.attr('data-json-path'), spec_box = $("#pros_form_"+sign+"_item_specs_"+field+"_specs_box"), template_buttons_html = '<button class="btn btn-secondary btn-sm me-5 mb-5 pros_form_'+sign+'_specs_'+field+'_specs_item_button" data-spec-key="__KEY__" data-value-key="__VALUE_KEY__" data-value-name="__NAME__">__NAME__</button>', template_html = '<div class="d-flex flex-column mb-5 pros_form_'+sign+'_specs_'+field+'_specs_item my-3" data-spec-key="__KEY__"><label class="fs-6 fw-bold mb-5">__TEXT__<i class="fa fa-times-circle text-hover-danger cursor-pointer mx-3"></i> </label><div class="d-flex flex-row align-items-center flex-wrap" id="pros_form_'+sign+'_specs_'+field+'_specs_item_button_box___KEY__">__BUTTONS__ <div class="input-group w-lg-250px mb-5"><input type="text" class="form-control form-control-sm" id="pros_form_'+sign+'_specs_'+field+'_specs_item_values_create_input___KEY__" data-spec-key="__KEY__" placeholder="请输入需要新增的__TEXT__属性名称"><span class="input-group-text cursor-pointer pros_form_'+sign+'_specs_'+field+'_specs_item_values_create_trigger" data-target="#pros_form_'+sign+'_specs_'+field+'_specs_item_values_create_input___KEY__" data-spec-key-name="__TEXT__" data-spec-key="__KEY__">添加</span></div></div></div>', create_form_query = JSON.parse(_this.attr('data-create-form-query')), names = JSON.parse(_this.attr('data-names')), create_trigger = $("#pros_form_"+sign+"_item_specs_"+field+"_create_trigger"), selector = $("#pros_form_"+sign+"_item_specs_"+field+"_spec_selector"), confirm_trigger = $("#pros_form_"+sign+"_item_specs_"+field+"_confirmed_trigger"), refresh_func = function () {
+                    var table = $("#pros_form_"+sign+"_item_specs_"+field+"_specs_with_values_table"), json_path = _this.attr('data-json-path'), spec_box = $("#pros_form_"+sign+"_item_specs_"+field+"_specs_box"), setting_all_trigger = $("#pros_form_"+sign+"_item_specs_"+field+"_items_build_setting_all_trigger"), template_buttons_html = '<button class="btn btn-secondary btn-sm me-5 mb-5 pros_form_'+sign+'_specs_'+field+'_specs_item_button" data-selected="0" data-spec-key-name="__KEY_NAME__" data-spec-key="__KEY__" data-value-key="__VALUE_KEY__" data-value-name="__NAME__">__NAME__</button>', template_html = '<div class="d-flex flex-column mb-5 pros_form_'+sign+'_specs_'+field+'_specs_item my-3" data-spec-key="__KEY__"><label class="fs-6 fw-bold mb-5">__TEXT__<i class="fa fa-times-circle text-hover-danger cursor-pointer mx-3 pros_form_'+sign+'_specs_'+field+'_specs_item_remove_trigger"></i> </label><div class="d-flex flex-row align-items-center flex-wrap" id="pros_form_'+sign+'_specs_'+field+'_specs_item_button_box___KEY__">__BUTTONS__ </div></div>', create_form_query = JSON.parse(_this.attr('data-create-form-query')), names = JSON.parse(_this.attr('data-names')), create_trigger = $("#pros_form_"+sign+"_item_specs_"+field+"_create_trigger"), selector = $("#pros_form_"+sign+"_item_specs_"+field+"_spec_selector"), confirm_trigger = $("#pros_form_"+sign+"_item_specs_"+field+"_confirmed_trigger"), build_trigger = $("#pros_form_"+sign+"_item_specs_"+field+"_items_build_trigger"), refresh_func = function () {
+                        //获取内容
+                        $.getJSON(json_path, function (data) {
+                            //生成内容
+                            var options = '';
+                            //循环内容
+                            $.each(data, function (i, item) {
+                                //添加内容
+                                options += '<option value="'+item[names['key_name']]+'" class="specs_option">'+item[names['text_name']]+'</option>';
+                            });
+                            //设置内容
+                            selector.find('option.specs_option').remove();
+                            //添加内容
+                            selector.append(options);
+                            //设置已更新
+                            selector.change();
+                        });
+                    }, table_trigger = function () {
+                        //获取对象
+                        var tbody_empty = $("#pros_form_"+sign+"_item_specs_"+field+"_specs_with_values_empty_row");
+                        //隐藏empty
+                        tbody_empty.removeClass('d-none').addClass('d-none');
+                        //延迟处理
+                        setTimeout(function () {
+                            //判断表格长度
+                            var tbody_row = table.find('.pros_form_'+sign+'_item_specs_'+field+'_specs_with_values_row'), thead_box = $("#pros_form_"+sign+"_item_specs_"+field+"_specs_with_values_thead");
+                            //设置empty长度
+                            tbody_empty.find('td').attr("colspan", thead_box.find('th').length);
+                            //判断长度是否存在
+                            if (typeof (tbody_row) !== 'undefined' && tbody_row.length > 0) {
+                                //显示设置全部
+                                setting_all_trigger.removeClass('d-none');
+                            } else {
+                                //显示empty
+                                tbody_empty.removeClass('d-none');
+                                //隐藏设置全部
+                                setting_all_trigger.removeClass('d-none').addClass('d-none');
+                            }
+                            //设置内容更改触发
+                            table.find('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_item_value').on('change', function () {
+                                //初始化结果
+                                var results = [];
+                                //循环每行
+                                table.find('.pros_form_'+sign+'_item_specs_'+field+'_specs_with_values_row').each(function () {
+                                    //整理信息
+                                    var row_value = {values: JSON.parse($(this).attr('data-value-keys'))};
+                                    //循环对象
+                                    $(this).find('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_item_value').each(function () {
+                                        //追加信息
+                                        row_value[$(this).attr('data-key')] = checkNumberOrString($(this).val());
+                                    });
+                                    //设置信息
+                                    results.push(row_value);
+                                });
+                                //设置信息
+                                target_object.val(JSON.stringify(results)).change();
+                            });
+                        }, 600);
+                    }, box_trigger = function () {
+                        //延迟处理
+                        setTimeout(function () {
+                            //设置按钮点击触发
+                            spec_box.find('.pros_form_'+sign+'_specs_'+field+'_specs_item_button').off().on('click', function () {
+                                //设置按钮触发
+                                if ($(this).hasClass('btn-success')) {
+                                    //移除
+                                    $(this).removeClass('btn-success').removeClass('btn-secondary').addClass('btn-secondary');
+                                    $(this).attr('data-selected', 0);
+                                } else {
+                                    //添加
+                                    $(this).removeClass('btn-success').removeClass('btn-secondary').addClass('btn-success');
+                                    $(this).attr('data-selected', 1);
+                                }
+                            });
+                            //设置按钮点击触发
+                            spec_box.find('.pros_form_'+sign+'_specs_'+field+'_specs_item_values_create_trigger').off().on('click', function () {
+                                //获取对象
+                                var input_object = $($(this).attr('data-target')), input_value = input_object.val(), button_html = '';
+                                //判断长度
+                                if (typeof input_value !== 'undefined' && input_value.length > 0) {
+                                    //添加按钮
+                                    button_html = template_buttons_html.replaceAll('__KEY__', $(this).attr('data-spec-key'));
+                                    button_html = template_buttons_html.replaceAll('__KEY_NAME__', $(this).attr('data-spec-key-name'));
+                                    button_html = button_html.replaceAll('__VALUE_KEY__', 0);
+                                    button_html = button_html.replaceAll('__NAME__', input_value);
+                                    //添加数据
+                                    $("#pros_form_"+sign+"_specs_"+field+"_specs_item_button_box_"+$(this).attr('data-spec-key')).prepend(button_html);
+                                }
+                                //设置为空
+                                input_object.val('').change();
+                                //重新触发
+                                box_trigger();
+                            });
+                            //设置按钮点击触发
+                            spec_box.find('.pros_form_'+sign+'_specs_'+field+'_specs_item_remove_trigger').off().on('click', function () {
+                                //移除父级item
+                                $(this).parents('.pros_form_'+sign+'_specs_'+field+'_specs_item').remove();
+                            });
+                        }, 500);
+                    }, image_trigger = function (input_trigger) {
+                        //获取信息
+                        var image_box = input_trigger.siblings('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_image_box'), image_uploader = input_trigger.siblings(".pros_form_"+sign+"_item_specs_"+field+"_value_rows_image_uploader");
+                        //设置触发
+                        image_box.off().on('click', function () {
+                            //设置uploader信息
+                            image_uploader.val('');
+                            //设置触发
+                            image_uploader.trigger('click');
+                        });
+                        //设置上传触发
+                        image_uploader.on('change', function (file) {
+                            //整理信息
+                            var upload_files = file.target.files;
+                            //判断文件信息
+                            if (typeof (upload_files) !== 'undefined' && !$.isEmptyObject(upload_files)) {
+                                //加载loading
+                                var loading = loadingStart(input_trigger, image_box[0], '正在上传文件...');
+                                //整理上传信息
+                                var uploadData = new FormData();
+                                //整理信息
+                                uploadData.append('file', file.target.files[0]);
+                                uploadData.append('file_type', 'binary');
+                                uploadData.append('dictionary', image_uploader.attr('data-upload-dictionary'));
+                                uploadData.append('origin_name', file.target.files[0]['name']);
+                                //开始请求上传
+                                $.ajax({
+                                    type: 'post',
+                                    url: image_uploader.attr('data-upload-url'),
+                                    data: uploadData,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function (res) {
+                                        //判断上传状态
+                                        if (res.state) {
+                                            //设置内容
+                                            input_trigger.val(res.data['link']).change();
+                                            //设置图片地址
+                                            image_box.css({
+                                                'background': 'url('+res.data['link']+')',
+                                                'background-size': '100%',
+                                                'background-repeat': 'no-repeat',
+                                                'background-position': 'center',
+                                            });
+                                        } else {
+                                            //提示信息
+                                            alertToast(res.msg, 2000, 'error', '文件上传');
+                                        }
+                                    },
+                                    error: function (res) {
+                                        //提示信息
+                                        alertToast('网络错误，请稍后再试', 2000, 'error', '文件上传');
+                                    }
+                                });
+                                //关闭弹窗
+                                loadingStop(loading, input_trigger);
+                            }
+                        });
+                    };
+                    //生成设置全部触发
+                    setting_all_trigger.off().on('click', function () {
+                        //整理模态框信息
+                        var _this_trigger = $(this), body = $('body'), setting_all_template = $("#pros_form_"+sign+"_item_specs_"+field+"_specs_setting_all_template").html(), bind_form_modal_target = 'pros_form_'+sign+'_modal_with_from_of_'+randomString(8), modal_html = '<div class="modal fade pros_form_'+sign+'_bind_form_of_modal" id="'+bind_form_modal_target+'" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-lg" role="document"><div class="modal-content"><div class="modal-header py-5"><h5 class="modal-title">批量设置</h5><button type="button" class="btn btn-icon btn-sm btn-active-light-primary ms-2 pros_table_form_modal_close_icon" data-bs-dismiss="modal" aria-label="Close" id="'+bind_form_modal_target+'_close_icon"><i aria-hidden="true" class="fa fa-times"></i></button></div><div class="modal-body mh-700px overflow-auto">'+setting_all_template+'</div><div class="modal-footer" id="'+bind_form_modal_target+'_footer"><button class="btn btn-primary btn-sm pros_form_button" id="'+bind_form_modal_target+'_confirm_trigger">确认设置</button></div></div></div></div>';
+                        //追加数据
+                        body.append(modal_html);
+                        //获取对象
+                        var modal_object = $("#"+bind_form_modal_target);
+                        //显示弹窗
+                        new bootstrap.Modal(modal_object[0], {backdrop: 'static', keyboard: false}).show();
+                        //循环触发
+                        modal_object.find('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_image_item').each(function () {
+                            //触发
+                            image_trigger($(this));
+                        });
+                        //设置创建触发
+                        modal_object.find('#'+bind_form_modal_target+'_confirm_trigger').on('click', function () {
+                            //循环数据
+                            modal_object.find('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_item_value').each(function () {
+                                //设置信息
+                                table.find('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_item_value[data-key="'+$(this).attr('data-key')+'"]').val($(this).val());
+                                //判断是否为图片
+                                if ($(this).attr('data-type') === 'image') {
+                                    //设置所有box
+                                    table.find('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_item_value[data-key="'+$(this).attr('data-key')+'"]').siblings('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_image_box').css({
+                                        'background': 'url('+$(this).val()+')',
+                                        'background-size': '100%',
+                                        'background-repeat': 'no-repeat',
+                                        'background-position': 'center',
+                                    })
+                                }
+                            });
+                            //设置触发
+                            table.find('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_item_value').change();
+                            //触发关闭
+                            modal_object.find('.pros_table_form_modal_close_icon').trigger('click');
+                        });
+                        //关闭弹窗事件触发
+                        modal_object.on('hidden.bs.modal', function () {
+                            //删除当前modal
+                            modal_object.remove();
+                            //删除遮罩
+                            body.find('.modal-backdrop').remove();
+                        });
+                    });
+                    //生成属性监听
+                    build_trigger.off().on('click', function () {
+                        //整理数据
+                        var items = {}, item_values = {}, values = [], spec_values = {};
+                        //循环box
+                        spec_box.find('.pros_form_'+sign+'_specs_'+field+'_specs_item').each(function () {
+                            //获取选中button
+                            var selected_buttons = $(this).find('.pros_form_'+sign+'_specs_'+field+'_specs_item_button[data-selected="1"]'), spec_key = checkNumberOrString($(this).attr('data-spec-key'));
+                            //判断是否存在按钮
+                            if (typeof (selected_buttons) !== 'undefined' && selected_buttons.length > 0) {
+                                //设置信息
+                                items[spec_key] = {key: 0, name: '', values: []};
+                                item_values[spec_key] = [];
+                                //循环按钮
+                                selected_buttons.each(function () {
+                                    //追加信息
+                                    items[spec_key]['key'] = checkNumberOrString($(this).attr('data-spec-key'));
+                                    items[spec_key]['name'] = checkNumberOrString($(this).attr('data-spec-key-name'));
+                                    items[spec_key]['values'][checkNumberOrString($(this).attr('data-value-key'))] = {'key': checkNumberOrString($(this).attr('data-value-key')), 'name': checkNumberOrString($(this).attr('data-value-name'))};
+                                    item_values[spec_key].push(checkNumberOrString($(this).attr('data-value-key')));
+                                    spec_values[checkNumberOrString($(this).attr('data-value-key'))] = checkNumberOrString($(this).attr('data-value-name'));
+                                });
+                            }
+                        });
+                        //判断长度
+                        if ($.isEmptyObject(item_values)) {
+                            //提示错误
+                            alertToast('请至少选择一项规格属性后再生成！', 3000, 'info');
+                            //返回失败
+                            return false;
+                        }
+                        //循环对象信息
+                        $.each(item_values, function (i, item) {
+                            //追加信息
+                            values.push(item);
+                        });
+                        //生成笛卡尔乘积
+                        var groups = crossJoin(values), thead_html = $("#pros_form_"+sign+"_item_specs_"+field+"_specs_with_values_thead_template").html(), tbody_html = '', tbody_row_html = $("#pros_form_"+sign+"_item_specs_"+field+"_specs_with_values_row_template").html(), thead_specs_names_html = '';
+                        //循环规格信息
+                        $.each(items, function (i, item) {
+                            //增加数据
+                            thead_specs_names_html += '<th>'+item['name']+'</th>';
+                        });
+                        //追加信息
+                        table.find("#pros_form_"+sign+"_item_specs_"+field+"_specs_with_values_thead").empty().html('<tr class="border-bottom fs-7 fw-bolder text-gray-700 text-uppercase bg-secondary">'+thead_html.replaceAll('<th>__SPECS_NAMES__</th>', thead_specs_names_html)+'</tr>');
+                        table.find(".pros_form_"+sign+"_item_specs_"+field+"_specs_with_values_row").remove();
+                        $.each(groups, function (i, item) {
+                            //获取模版
+                            var template = tbody_row_html, values_html = '';
+                            //循环item
+                            $.each(item, function (index, value_key) {
+                               //追加信息
+                                values_html += '<td class="text-primary fw-bold" style="line-height: 40px">'+spec_values[value_key]+'</td>';
+                            });
+                            //添加信息
+                            template = template.replaceAll('<td>__SPECS_VALUES__</td>', values_html);
+                            //追加信息
+                            table.find("#pros_form_"+sign+"_item_specs_"+field+"_specs_with_values_rows").prepend('<tr class="pros_form_'+sign+'_item_specs_'+field+'_specs_with_values_row" data-value-keys="'+JSON.stringify(item)+'">'+template+'</tr>');
+                        });
+                        //循环触发
+                        table.find('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_image_item').each(function () {
+                            //触发
+                            image_trigger($(this));
+                        });
+                        //触发内部数据
+                        table_trigger();
+                    });
+                    //设置创建监听
+                    create_trigger.off().on('click', function () {
+                        //整理模态框信息
+                        var _this_trigger = $(this), body = $('body'), bind_form_modal_target = 'pros_form_'+sign+'_modal_with_from_of_'+randomString(8), query_params = {}, loading = loadingStart(_this_trigger, form[0], '正在加载...');
+                        //执行请求
+                        buildRequest(create_form_query['query_url'], query_params, create_form_query['query_method'], true, function (res) {
+                            //设置内容
+                            var modal_html = '<div class="modal fade pros_form_'+sign+'_bind_form_of_modal" id="'+bind_form_modal_target+'" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-'+create_form_query['modal_size']+'" role="document"><div class="modal-content"><div class="modal-header py-5"><h5 class="modal-title">新增信息</h5><button type="button" class="btn btn-icon btn-sm btn-active-light-primary ms-2 pros_table_form_modal_close_icon" data-bs-dismiss="modal" aria-label="Close" id="'+bind_form_modal_target+'_close_icon"><i aria-hidden="true" class="fa fa-times"></i></button></div><div class="modal-body mh-700px overflow-auto" style="background-color: #f5f8fa">'+res.data['html']+'</div><div class="modal-footer" id="'+bind_form_modal_target+'_footer"></div></div></div></div>'
+                            //添加内容
+                            body.append(modal_html);
+                            //获取对象
+                            var modal_object = $("#"+bind_form_modal_target);
+                            //显示弹窗
+                            new bootstrap.Modal(modal_object[0], {backdrop: 'static', keyboard: false}).show();
+                            //引入实例对象
+                            createExtraJs(form.attr('data-source-path')+'/form-builder.js', $.form_builder, function () {
+                                //获取表单标识
+                                var form_sign = modal_object.find('.pros_form_builder').attr('data-sign');
+                                //创建处理实例对象
+                                $.form_builder.init(form_sign, function () {
+                                    //设置表单与modal结合
+                                    $.form_builder.containWithModal(form_sign, bind_form_modal_target);
+                                });
+                            });
+                            //关闭弹窗事件触发
+                            modal_object.on('hidden.bs.modal', function () {
+                                //删除当前modal
+                                $("#"+bind_form_modal_target).remove();
+                                //删除遮罩
+                                body.find('.modal-backdrop').remove();
+                                //刷新数据
+                                refresh_func();
+                            });
+                        }, function (res) {
+                            //提示失败
+                            alertToast(res.msg, 2000, 'error');
+                        }, function () {
+                            //关闭加载
+                            loadingStop(loading, _this_trigger);
+                        });
+                    });
+                    //设置确定提交监听
+                    confirm_trigger.off().on('click', function () {
+                        //获取选择器选择规格
+                        var selector_value = selector.val();
+                        //查询规格是否存在
+                        if (spec_box.find('.pros_form_'+sign+'_specs_'+field+'_specs_item[data-spec-key="'+checkNumberOrString(selector_value)+'"]').length > 0) {
+                            //提示错误
+                            alertToast('规格已存在，不可重复添加！', 3000, 'info');
+                            //返回失败
+                            return false;
+                        }
+                        //获取内容
+                        $.getJSON(json_path, function (data) {
+                            //获取当前选择值
+                            var spec_data = data[checkNumberOrString(selector_value)], buttons_html = '', template = template_html;
+                            //替换内容
+                            template = template.replaceAll('__KEY__', spec_data[names['key_name']]);
+                            template = template.replaceAll('__TEXT__', spec_data[names['text_name']]);
+                            // buttons_html = buttons_html.replaceAll('__KEY__', spec_data[names['key_name']]);
+                            //循环属性值
+                            $.each(spec_data[names['values_name']], function (i, item) {
+                                //设置信息
+                                var html = template_buttons_html;
+                                //追加按钮信息
+                                html = html.replaceAll('__KEY__', spec_data[names['key_name']]);
+                                html = html.replaceAll('__KEY_NAME__', spec_data[names['text_name']]);
+                                html = html.replaceAll('__NAME__', item[names['text_name']]);
+                                html = html.replaceAll('__VALUE_KEY__', item[names['key_name']]);
+                                //追加信息
+                                buttons_html += html;
+                            });
+                            //追加信息
+                            spec_box.prepend(template.replaceAll('__BUTTONS__', buttons_html));
+                        });
+                        //触发操作
+                        box_trigger();
+                    });
+                    //刷新规格
+                    refresh_func();
+                    //刷新box触发
+                    box_trigger();
+                    //触发内部数据
+                    table_trigger();
+                    //默认触发图片
+                    //循环触发
+                    table.find('.pros_form_'+sign+'_item_specs_'+field+'_value_rows_image_item').each(function () {
+                        //触发
+                        image_trigger($(this));
+                    });
+                    break;
+                case 'dynamic':
+                    //获取基础数据
+                    var json_path = _this.attr('data-json-path'), create_form_query = JSON.parse(_this.attr('data-create-form-query')), create_trigger = $("#pros_form_"+sign+"_item_dynamic_"+field+"_create_trigger"), refresh_func = function () {
+                        //获取内容
+                        $.getJSON(json_path, function (data) {
+                            //生成内容
+                            var options = '', isset_value = target_object.prop('multiple') ? JSON.parse(default_value) : [checkNumberOrString(default_value)];
+                            //循环内容
+                            $.each(data, function (i, item) {
+                                //添加内容
+                                options += '<option value="'+i+'" class="dynamic_option" '+($.inArray(checkNumberOrString(i), isset_value) > -1 ? 'selected' : '')+'>'+item+'</option>';
+                            });
+                            //设置内容
+                            target_object.find('option.dynamic_option').remove();
+                            //添加内容
+                            target_object.append(options);
+                            //设置已更新
+                            target_object.change();
+                        });
+                    };
+                    //设置创建监听
+                    create_trigger.off().on('click', function () {
+                        //整理模态框信息
+                        var _this_trigger = $(this), body = $('body'), bind_form_modal_target = 'pros_form_'+sign+'_modal_with_from_of_'+randomString(8), query_params = {}, loading = loadingStart(_this_trigger, form[0], '正在加载...');
+                        //执行请求
+                        buildRequest(create_form_query['query_url'], query_params, create_form_query['query_method'], true, function (res) {
+                            //设置内容
+                            var modal_html = '<div class="modal fade pros_form_'+sign+'_bind_form_of_modal" id="'+bind_form_modal_target+'" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-'+create_form_query['modal_size']+'" role="document"><div class="modal-content"><div class="modal-header py-5"><h5 class="modal-title">新增信息</h5><button type="button" class="btn btn-icon btn-sm btn-active-light-primary ms-2 pros_table_form_modal_close_icon" data-bs-dismiss="modal" aria-label="Close" id="'+bind_form_modal_target+'_close_icon"><i aria-hidden="true" class="fa fa-times"></i></button></div><div class="modal-body mh-700px overflow-auto" style="background-color: #f5f8fa">'+res.data['html']+'</div><div class="modal-footer" id="'+bind_form_modal_target+'_footer"></div></div></div></div>'
+                            //添加内容
+                            body.append(modal_html);
+                            //获取对象
+                            var modal_object = $("#"+bind_form_modal_target);
+                            //显示弹窗
+                            new bootstrap.Modal(modal_object[0], {backdrop: 'static', keyboard: false}).show();
+                            //引入实例对象
+                            createExtraJs(form.attr('data-source-path')+'/form-builder.js', $.form_builder, function () {
+                                //获取表单标识
+                                var form_sign = modal_object.find('.pros_form_builder').attr('data-sign');
+                                //创建处理实例对象
+                                $.form_builder.init(form_sign, function () {
+                                    //设置表单与modal结合
+                                    $.form_builder.containWithModal(form_sign, bind_form_modal_target);
+                                });
+                            });
+                            //关闭弹窗事件触发
+                            modal_object.on('hidden.bs.modal', function () {
+                                //删除当前modal
+                                $("#"+bind_form_modal_target).remove();
+                                //删除遮罩
+                                body.find('.modal-backdrop').remove();
+                                //刷新数据
+                                refresh_func();
+                            });
+                        }, function (res) {
+                            //提示失败
+                            alertToast(res.msg, 2000, 'error');
+                        }, function () {
+                            //关闭加载
+                            loadingStop(loading, _this_trigger);
+                        });
+
+                    });
+                    //获取最新数据
+                    refresh_func();
+                    break;
+                case 'linkage':
+                    //获取基础信息
+                    var json_path = _this.attr('data-json-path'), default_values = JSON.parse(_this.attr('data-default-value')), create_form_query = _this.attr('data-create-form-query'), default_key = _this.attr('data-default-key'), total_level = _this.attr('data-level'), names = JSON.parse(_this.attr('data-names')), linkage_box = $("#pros_form_"+sign+"_item_"+field+"_box"), create_trigger = $("#pros_form_"+sign+"_item_linkage_"+field+"_create_trigger"), linkage_change_trigger = function (keys, current_level = 1, callback_func) {
+                        //获取内容
+                        $.getJSON(json_path, function (data) {
+                            //判断key
+                            if (!$.isEmptyObject(keys)) {
+                                //循环key
+                                $.each(keys, function (i, item) {
+                                    //判断是否存在
+                                    if (item in data) {
+                                        //设置data
+                                        data = data[item][names['sub_name']];
+                                    }
+                                });
+                                //生成内容
+                                var options = '';
+                                //循环内容
+                                $.each(data, function (ii, it) {
+                                    //添加内容
+                                    options += '<option value="'+checkNumberOrString(it[names['key_name']])+'" class="linkage_option">'+it[names['text_name']]+'</option>';
+                                });
+                                //判断当前为第一级
+                                if (current_level <= 0 && keys[0].length <= 0) {
+                                    //设置信息
+                                    keys = [];
+                                }
+                                //自增等级
+                                current_level = (parseInt(current_level) + 1);
+                                //设置内容
+                                linkage_box.find('.pros_form_'+sign+'_item_'+field+'_linkage_item[data-level="'+current_level+'"]').attr('data-keys', JSON.stringify(keys)).append(options);
+                            }
+                            //判断是否存在回调
+                            if (typeof callback_func == 'function') {
+                                callback_func();
+                            }
+                        });
+                    }, clear_options_trigger = function (level) {
+                        //循环内容
+                        linkage_box.find('.pros_form_'+sign+'_item_'+field+'_linkage_item').each(function () {
+                            //判断当前层级
+                            if (parseInt($(this).attr('data-level')) > parseInt(level)) {
+                                //删除动态option
+                                $(this).find('option.linkage_option').remove();
+                                //设置默认选中
+                                $(this).find('option.default_option').prop('selected', true);
+                                //设置keys
+                                $(this).attr('data-keys', '[]');
+                            }
+                        });
+                    }, default_options_trigger = function () {
+                        //判断长度
+                        if (parseInt(default_values.length) < parseInt(total_level)) {
+                            //加载第一项
+                            linkage_change_trigger([default_key], 0);
+                        } else {
+                            //加载第一项
+                            linkage_change_trigger([default_key], 0, function () {
+                                //循环默认值
+                                $.each(default_values, function (i, item) {
+                                    //延迟处理
+                                    setTimeout(function () {
+                                        //设置元素
+                                        linkage_box.find('.pros_form_'+sign+'_item_'+field+'_linkage_item[data-level="'+(parseInt(i)+1)+'"]').val(checkNumberOrString(item)).change();
+                                    }, 2000 * i);
+                                });
+                            });
+                        }
+                    };
+                    //监听更改
+                    linkage_box.find('.pros_form_'+sign+'_item_'+field+'_linkage_item').on('change', function () {
+                        //获取默认值
+                        var item_keys = JSON.parse($(this).attr('data-keys')), current_level = $(this).attr('data-level'), item_value = $(this).val();
+                        //判断值是否有效
+                        if (item_value !== null && item_value.length > 0 && item_value !== default_key) {
+                            //追加当前默认值
+                            item_keys.push(checkNumberOrString(item_value));
+                        }
+                        //判断是否为最后一栏
+                        if (parseInt(current_level) < parseInt(total_level)) {
+                            //清空下级option
+                            clear_options_trigger(current_level);
+                            //触发加载
+                            linkage_change_trigger(item_keys, current_level);
+                        }
+                        //设置默认值
+                        target_object.val(JSON.stringify(item_keys)).change();
+                    });
+                    //设置默认触发
+                    default_options_trigger();
+                    //判断触发是否存在
+                    if (typeof (create_trigger) !== 'undefined' && create_trigger.length > 0) {
+                        //设置参数
+                        create_form_query = JSON.parse(create_form_query);
+                        //设置创建监听
+                        create_trigger.off().on('click', function () {
+                            //整理模态框信息
+                            var _this_trigger = $(this), body = $('body'), bind_form_modal_target = 'pros_form_'+sign+'_modal_with_from_of_'+randomString(8), query_params = {}, loading = loadingStart(_this_trigger, form[0], '正在加载...');
+                            //执行请求
+                            buildRequest(create_form_query['query_url'], query_params, create_form_query['query_method'], true, function (res) {
+                                //设置内容
+                                var modal_html = '<div class="modal fade pros_form_'+sign+'_bind_form_of_modal" id="'+bind_form_modal_target+'" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-'+create_form_query['modal_size']+'" role="document"><div class="modal-content"><div class="modal-header py-5"><h5 class="modal-title">新增信息</h5><button type="button" class="btn btn-icon btn-sm btn-active-light-primary ms-2 pros_table_form_modal_close_icon" data-bs-dismiss="modal" aria-label="Close" id="'+bind_form_modal_target+'_close_icon"><i aria-hidden="true" class="fa fa-times"></i></button></div><div class="modal-body mh-700px overflow-auto" style="background-color: #f5f8fa">'+res.data['html']+'</div><div class="modal-footer" id="'+bind_form_modal_target+'_footer"></div></div></div></div>'
+                                //添加内容
+                                body.append(modal_html);
+                                //获取对象
+                                var modal_object = $("#"+bind_form_modal_target);
+                                //显示弹窗
+                                new bootstrap.Modal(modal_object[0], {backdrop: 'static', keyboard: false}).show();
+                                //引入实例对象
+                                createExtraJs(form.attr('data-source-path')+'/form-builder.js', $.form_builder, function () {
+                                    //获取表单标识
+                                    var form_sign = modal_object.find('.pros_form_builder').attr('data-sign');
+                                    //创建处理实例对象
+                                    $.form_builder.init(form_sign, function () {
+                                        //设置表单与modal结合
+                                        $.form_builder.containWithModal(form_sign, bind_form_modal_target);
+                                    });
+                                });
+                                //关闭弹窗事件触发
+                                modal_object.on('hidden.bs.modal', function () {
+                                    //删除当前modal
+                                    $("#"+bind_form_modal_target).remove();
+                                    //删除遮罩
+                                    body.find('.modal-backdrop').remove();
+                                    //刷新数据
+                                    default_options_trigger();
+                                });
+                            }, function (res) {
+                                //提示失败
+                                alertToast(res.msg, 2000, 'error');
+                            }, function () {
+                                //关闭加载
+                                loadingStop(loading, _this_trigger);
+                            });
+
+                        });
+                    }
+                    break;
+                case 'values':
+                    //整理基础数据
+                    var insert_btn = $("#pros_form_"+sign+"_item_"+field+"_values_insert"), delete_all_btn = $("#pros_form_"+sign+"_item_"+field+"_values_delete_all"), template = $("#pros_form_"+sign+"_item_"+field+"_values_template").html(), values_box = $("#pros_form_"+sign+"_item_"+field+"_values_box"), empty_row = $("#pros_form_"+sign+"_item_"+field+"_values_empty_row"), values_change_trigger = function () {
+                        //设置信息
+                        var values = [];
+                        //循环项目
+                        values_box.find('.pros_form_'+sign+'_item_'+field+'_values_row').each(function () {
+                            //整理参数
+                            var content = {};
+                            //循环内容
+                            $(this).find('.pros_form_'+sign+'_item_'+field+'_values_item').each(function () {
+                                //判断key
+                                if (typeof $(this).attr('data-key') !== 'undefined') {
+                                    //根据类型处理
+                                    switch ($(this).attr('data-type')) {
+                                        case 'switch':
+                                            content[$(this).attr('data-key')] = $(this).is(':checked') ? $(this).attr('data-on-value') : $(this).attr('data-off-value');
+                                            break;
+                                        case 'select':
+                                            //获取当前值
+                                            var select_value = $(this).val();
+                                            //判断是否为多选
+                                            if ($(this).prop('multiple')) {
+                                                //设置值
+                                                var select_values = [];
+                                                //判断信息
+                                                if (typeof select_value !== 'undefined' && select_value.length > 0) {
+                                                    //循环内容
+                                                    $.each(select_value, function (i, item) {
+                                                        //新增字段
+                                                        select_values.push(checkNumberOrString(item));
+                                                    });
+                                                }
+                                                //设置值
+                                                select_value = select_values;
+                                            } else {
+                                                //处理值
+                                                select_value = checkNumberOrString(select_value);
+                                            }
+                                            //设置内容
+                                            content[$(this).attr('data-key')] = select_value;
+                                            break;
+                                        default:
+                                            //设置内容
+                                            content[$(this).attr('data-key')] = checkNumberOrString($(this).val());
+                                            break;
+                                    }
+                                }
+                            });
+                            //添加内容
+                            values.push(content);
+                        });
+                        //判断长度
+                        if (values.length > 0) {
+                            //隐藏empty
+                            empty_row.removeClass('d-none').addClass('d-none');
+                        } else {
+                            //显示empty
+                            empty_row.removeClass('d-none');
+                        }
+                        //获取值
+                        target_object.val(JSON.stringify(values)).change();
+                    }, select2_options = {
+                        placeholderOption: "first",
+                        // allowClear: true
+                    };
+                    //获取绑定对象
+                    var dropdown_modal_id = form.attr('data-modal-id');
+                    //判断是否为modal
+                    if (typeof (dropdown_modal_id) !== 'undefined' && dropdown_modal_id.length > 0) {
+                        //添加参数
+                        select2_options.dropdownParent = $("#"+dropdown_modal_id);
+                    }
+                    //设置select2
+                    values_box.find('select.value_default_item').select2(select2_options);
+                    //监听添加
+                    insert_btn.on('click', function () {
+                        //添加基础结构
+                        values_box.append(template);
+                        //设置select2
+                        values_box.find('select.value_append_item').select2(select2_options);
+                        //重置触发
+                        values_change_trigger();
+                    });
+                    //监听删除全部
+                    delete_all_btn.on('click', function () {
+                        //删除基础结构
+                        values_box.find('.pros_form_'+sign+'_item_'+field+'_values_row').remove();
+                        //重置触发
+                        values_change_trigger();
+                    });
+                    //单个删除触发
+                    values_box.on('click', '.pros_form_'+sign+'_item_'+field+'_values_trigger_delete', function () {
+                        //删除当前栏
+                        $(this).parents('.pros_form_'+sign+'_item_'+field+'_values_row').remove();
+                        //重置触发
+                        values_change_trigger();
+                    }).on('change', '.pros_form_'+sign+'_item_'+field+'_values_item', function () {
+                        //重置触发
+                        values_change_trigger();
+                    });
+                    //默认触发
+                    values_change_trigger();
                     break;
             }
         });
@@ -1151,7 +1870,22 @@ $.form_builder = {
                         //设置内容
                         params[field] = tag_item_values;
                         break;
-                    case 'select':
+                    case 'linkage':
+                        //设置默认值
+                        var linkage_item_values = JSON.parse(target_object.val());
+                        //判断不为空
+                        if (parseInt(required) === 1 && $.isEmptyObject(linkage_item_values)) {
+                            //验证提示
+                            return (params = validator_trigger(_this));
+                        }
+                        //判断信息
+                        if (parseInt(required) === 1 && linkage_item_values.length !== parseInt(_this.attr('data-level'))) {
+                            //验证提示
+                            return (params = validator_trigger(_this));
+                        }
+                        //设置内容
+                        params[field] = linkage_item_values;
+                        break;
                     case 'icon':
                         //获取值
                         var select_item_value = checkNumberOrString(target_object.val());
@@ -1162,6 +1896,40 @@ $.form_builder = {
                         }
                         //设置内容
                         params[field] = select_item_value;
+                        break;
+                    case 'select':
+                        //获取值
+                        var select_value = target_object.val();
+                        //判断是否为多选
+                        if (target_object.prop('multiple')) {
+                            //设置值
+                            var select_item_values = [];
+                            //判断信息
+                            if (typeof select_value !== 'undefined' && select_value.length > 0) {
+                                //循环内容
+                                $.each(select_value, function (i, item) {
+                                    //新增字段
+                                    select_item_values.push(checkNumberOrString(item));
+                                });
+                            }
+                            //判断信息
+                            if (parseInt(required) === 1 && (typeof (select_item_values) === 'undefined' || $.isEmptyObject(select_item_values) || select_item_values.length <= 0)) {
+                                //验证提示
+                                return (params = validator_trigger(_this));
+                            }
+                            //设置值
+                            select_value = select_item_values;
+                        } else {
+                            //处理值
+                            select_value = checkNumberOrString(select_value);
+                            //判断信息
+                            if (parseInt(required) === 1 && (typeof (select_value) === 'undefined' || select_value.length <= 0)) {
+                                //验证提示
+                                return (params = validator_trigger(_this));
+                            }
+                        }
+                        //设置内容
+                        params[field] = select_value;
                         break;
                     case 'switch':
                         //设置内容
@@ -1216,6 +1984,54 @@ $.form_builder = {
                         }
                         //设置内容
                         params[field] = checkbox_item_values;
+                        break;
+                    case 'dynamic':
+                        //获取值
+                         var dynamic_value = target_object.val();
+                        //判断是否为多选
+                        if (target_object.prop('multiple')) {
+                            //设置值
+                            var dynamic_values = [];
+                            //判断信息
+                            if (typeof dynamic_value !== 'undefined' && dynamic_value.length > 0) {
+                                //循环内容
+                                $.each(dynamic_value, function (i, item) {
+                                    //新增字段
+                                    dynamic_values.push(checkNumberOrString(item));
+                                });
+                            }
+                            //判断信息
+                            if (parseInt(required) === 1 && (typeof (dynamic_values) === 'undefined' || $.isEmptyObject(dynamic_values) || dynamic_values.length <= 0)) {
+                                //验证提示
+                                return (params = validator_trigger(_this));
+                            }
+                            //设置值
+                            dynamic_value = dynamic_values;
+                        } else {
+                            //处理值
+                            dynamic_value = checkNumberOrString(dynamic_value);
+                            //判断信息
+                            if (parseInt(required) === 1 && (typeof (dynamic_value) === 'undefined' || dynamic_value.length <= 0)) {
+                                //验证提示
+                                return (params = validator_trigger(_this));
+                            }
+                        }
+                        //设置内容
+                        params[field] = dynamic_value;
+                        break;
+                    case 'specs':
+                    case 'values':
+                        //设置默认值
+                        var values_item_value = target_object.val();
+                        //整理信息
+                        values_item_value = (typeof (values_item_value) === 'undefined' || values_item_value.length <= 0) ? [] : JSON.parse(values_item_value);
+                        //判断信息
+                        if (parseInt(required) === 1 && $.isEmptyObject(values_item_value)) {
+                            //验证提示
+                            return (params = validator_trigger(_this));
+                        }
+                        //设置内容
+                        params[field] = values_item_value;
                         break;
                     case 'input':
                         //获取值

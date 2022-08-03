@@ -457,10 +457,34 @@ function buildRequest(query_url, params, method, is_ajax, callback, fail_callbac
 function checkNumberOrString($value)
 {
     //判断是否为数字
-    if ($.isNumeric($value)) {
+    if ($.isNumeric($value) && $value !== 0 && $value.length > 0 && $value.substr(0, 1) !== '0') {
         //返回value数值型
         return Number($value);
     }
     //返回value字符串型
     return String($value);
+}
+
+/**
+ * 获取笛卡尔乘集
+ * @param arr
+ * @returns {[[]]}
+ */
+function crossJoin(arr = [])
+{
+    //获取数组乘积
+    const result = arr.reduce((accArr, currentArr) => {
+        let result = []
+        currentArr.forEach(c => {
+            if (accArr.length) {
+                accArr.forEach(a => {
+                    result.push(a.concat(c))
+                })
+            } else {
+                result.push([c])
+            }
+        })
+        return result
+    }, [])
+    return result;
 }

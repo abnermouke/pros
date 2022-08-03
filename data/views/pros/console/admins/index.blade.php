@@ -51,7 +51,7 @@
 
 {{-- 自定义页面弹窗 --}}
 @section('popups')
-    <div class="modal fade acb_table_form_modal" id="admin_wechat_oauth_qrcode_modal">
+    <div class="modal fade pros_table_form_modal" id="admin_wechat_oauth_qrcode_modal">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-dialog mw-650px">
                 <div class="modal-content">

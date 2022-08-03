@@ -10,7 +10,7 @@
             <div class="fs-7 fw-bold my-2 text-muted">{!! $description !!}</div>
         @endif
     </div>
-    <label class="form-check form-switch form-check-custom form-check-solid">
+    <label class="form-check form-switch form-check-custom form-check-solid mt-5">
         <input class="form-check-input" type="checkbox" id="pros_form_{{ $sign }}_item_{{ $field }}" name="{{ $field }}" {{ $readonly ? 'readonly' : '' }} {{ $disabled ? 'disabled' : '' }} @if($on == $default_value) checked="checked" @endif data-on-value="{{ $on }}" data-off-value="{{ $off }}"/>
         <span class="form-check-label fw-bold text-muted">{{ $allow_text }}</span>
     </label>

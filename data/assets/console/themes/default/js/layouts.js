@@ -28,7 +28,7 @@ $(function () {
             __permissions = typeof __permissions !== 'undefined' && __permissions.length > 0 ? JSON.parse(__permissions) : [];
 
             //判断当前是否选中
-            if (ROUTE_NAME === route_name) {
+            if (ROUTE_NAME === route_name || (!$.isEmptyObject(__permissions) && $.inArray(ROUTE_NAME, __permissions) >= 0)) {
 
                 //设置当前选中
                 $(this).removeClass('active').addClass('active');

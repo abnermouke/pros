@@ -18,7 +18,8 @@ class BasicBuilder
         'query_url' => '',
         'query_method' => 'get',
         'icon' => '',
-        'confirm_tip' => ''
+        'confirm_tip' => '',
+        'conditions' => []
     ];
 
     /**
@@ -137,6 +138,23 @@ class BasicBuilder
     {
         //设置参数
         $this->builder[$key] = $value;
+        //返回当前实例
+        return $this;
+    }
+
+    /**
+     * 设置显示并且条件
+     * @Author Abnermouke <abnermouke@outlook.com>
+     * @Originate in Abnermouke's MBP
+     * @Time 2022-07-25 22:55:58
+     * @param $field
+     * @param $value array
+     * @return $this
+     */
+    public function condition($field, $value)
+    {
+        //设置并且条件
+        $this->builder['conditions'][$field] = $value;
         //返回当前实例
         return $this;
     }

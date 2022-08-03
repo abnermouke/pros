@@ -24,6 +24,7 @@ class ValuesBuilder extends BasicBuilder
         //设置默认信息
         $this->builder['columns'] = [];
     }
+
     /**
      * 添加文本框
      * @Author Abnermouke <abnermouke@outlook.com>
@@ -53,15 +54,16 @@ class ValuesBuilder extends BasicBuilder
      * @param $key mixed value字段名
      * @param $guard_name string 显示文字
      * @param array $options 选项内容 [key_1 => guard_name_1, key_2 => guard_name_2]
+     * @param bool $multiple 是否可多选
      * @param array $extras 额外参数
      * @return ValuesBuilder
      */
-    public function addSelect($key, $guard_name, $options = [], $extras = [])
+    public function addSelect($key, $guard_name, $options = [], $multiple = false, $extras = [])
     {
         //设置默认类型
         $type = 'select';
         //添加选择框项
-        $this->builder['columns'][] = compact('key', 'guard_name', 'type', 'options', 'extras');
+        $this->builder['columns'][] = compact('key', 'guard_name', 'type', 'options', 'extras', 'multiple');
         //返回当前实例
         return $this;
     }

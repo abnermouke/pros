@@ -93,6 +93,16 @@ function initKtUserChats()
                 style: {
                     colors: labelColor,
                     fontSize: '12px'
+                },
+                formatter: function(val) {
+                    if (window.isNaN(val) || Math.floor(val) != val) {
+                        return val;
+                    }
+                    try{
+                        return val.toFixed(0);
+                    } catch(e){
+                        return val;
+                    }
                 }
             }
         },

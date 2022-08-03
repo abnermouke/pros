@@ -1,4 +1,4 @@
-<div class="d-flex flex-column {{ $hidden ? 'd-none' : '' }} pros_form_{{ $sign }}_item_box" data-target="#pros_form_{{ $sign }}_item_{{ $field }}" data-required="{{ $required ? 1 : 0 }}" data-type="{{ $type }}" data-field="{{ $field }}" data-default-value="{{ $default_value }}">
+<div class="d-flex flex-column {{ $hidden ? 'd-none' : '' }} pros_form_{{ $sign }}_item_box" data-target="#pros_form_{{ $sign }}_item_{{ $field }}" data-required="{{ $required ? 1 : 0 }}" data-type="{{ $type }}" data-field="{{ $field }}" data-default-value="{{ json_encode(object_2_array($default_value), JSON_UNESCAPED_UNICODE|JSON_NUMERIC_CHECK) }}">
     <label class="d-flex align-items-center fs-6 fw-bold mb-2">
         <span class="{{ $required ? 'required' : '' }}">{{ $guard_name }}</span>
         @if($tip)
@@ -28,8 +28,7 @@
                         <input class="form-control form-control-solid pros_form_{{ $sign }}_item_{{ $field }}_values_item" type="{{ data_get($column, 'input_type', 'text') }}" data-type="{{ $column['type'] }}" data-key="{{ $column['key'] }}" placeholder="请输入{{ $column['guard_name'] }}">
                         @break
                         @case('select')
-                        <select class="form-control form-control-solid pros_form_{{ $sign }}_item_{{ $field }}_values_item" data-type="{{ $column['type'] }}" data-key="{{ $column['key'] }}">
-                            <option value="">请选择{{ $column['guard_name'] }}</option>
+                        <select class="form-control form-control-solid value_append_item pros_form_{{ $sign }}_item_{{ $field }}_values_item" {{ $column['multiple'] ? 'multiple' : '' }} data-control="select2" data-type="{{ $column['type'] }}" data-key="{{ $column['key'] }}"  data-placeholder="请选择{{ $column['guard_name'] }}">
                             @foreach($column['options'] as $value => $name)
                                 <option value="{{ $value }}">{{ $name}}</option>
                             @endforeach
@@ -51,17 +50,20 @@
         <tbody id="pros_form_{{ $sign }}_item_{{ $field }}_values_box">
         @foreach(object_2_array($default_value) as $column_values)
             <tr class="border-bottom border-bottom-dashed pros_form_{{ $sign }}_item_{{ $field }}_values_row">
-                @foreach(data_get($extras, 'columns', []) as $column)
+                @foreach($columns as $column)
                     <td>
                         @switch($column['type'])
                             @case('input')
                             <input class="form-control form-control-solid pros_form_{{ $sign }}_item_{{ $field }}_values_item" value="{{ data_get($column_values, $column['key'], '') }}" type="{{ data_get($column, 'input_type', 'text') }}" data-type="{{ $column['type'] }}" data-key="{{ $column['key'] }}" placeholder="请输入{{ $column['guard_name'] }}">
                             @break
                             @case('select')
-                            <select class="form-control form-control-solid pros_form_{{ $sign }}_item_{{ $field }}_values_item" data-type="{{ $column['type'] }}" data-key="{{ $column['key'] }}">
-                                <option value="" {{ data_get($column_values, $column['key'], '') === '' ? 'selected' : '' }}>请选择{{ $column['guard_name'] }}</option>
+                            <select class="form-control form-control-solid value_default_item pros_form_{{ $sign }}_item_{{ $field }}_values_item" {{ $column['multiple'] ? 'multiple' : '' }} data-type="{{ $column['type'] }}" data-key="{{ $column['key'] }}" data-placeholder="请选择{{ $column['guard_name'] }}">
                                 @foreach($column['options'] as $value => $name)
-                                    <option value="{{ $value }}" {{ data_get($column_values, $column['key'], '') === $value ? 'selected' : '' }}>{{ $name}}</option>
+                                    @if($column['multiple'])
+                                        <option value="{{ $value }}" {{ in_array($value, data_get($column_values, $column['key'], [])) ? 'selected' : '' }}>{{ $name}}</option>
+                                    @else
+                                        <option value="{{ $value }}" {{ data_get($column_values, $column['key'], '') === $value ? 'selected' : '' }}>{{ $name}}</option>
+                                    @endif
                                 @endforeach
                             </select>
                             @break

@@ -128,6 +128,8 @@ $.table_builder = {
                         modal_object.on('hidden.bs.modal', function () {
                             //删除当前modal
                             $("#"+bind_form_modal_target).remove();
+                            //删除遮罩
+                            body.find('.modal-backdrop').remove();
                             //执行后置操作
                             after_func(params['after']);
                         });
@@ -165,6 +167,8 @@ $.table_builder = {
                             if (typeof params['bind_modal_id'] == 'undefined' || params['bind_modal_id'].length <= 0) {
                                 //删除当前modal
                                 $("#"+bind_modal_target).remove();
+                                //删除遮罩
+                                body.find('.modal-backdrop').remove();
                             }
                             //执行后置操作
                             after_func(params['after']);
