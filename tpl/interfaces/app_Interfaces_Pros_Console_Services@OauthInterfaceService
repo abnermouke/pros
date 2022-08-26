@@ -186,6 +186,11 @@ class OauthInterfaceService extends BaseService
      */
     public function wechat_qrcode_oauth($signature, $request)
     {
+        //判断是否引入easywechat
+        if (!File::exists('vendor/overtrue/laravel-wechat')) {
+            //返回失败
+            return pros_console_abort_error(CodeLibrary::DATA_MISSING, '请联系开发者引入：overtrue/laravel-wechat支持');
+        }
         //获取配置
         $config = (new ConfigCacheHandler())->get('WECHAT_OFFICE_ACCOUNT_PARAMS', []);
         //实例化应用
@@ -244,6 +249,11 @@ class OauthInterfaceService extends BaseService
      */
     public function wechat_qrcode_callback($signature, $code)
     {
+        //判断是否引入easywechat
+        if (!File::exists('vendor/overtrue/laravel-wechat')) {
+            //返回失败
+            return $this->fail(CodeLibrary::DATA_MISSING, '请联系开发者引入：overtrue/laravel-wechat支持');
+        }
         //查询签名状态
         if (!$oauth = (new AdminOauthSignatureRepository())->row(compact('signature'))) {
             //返回失败

@@ -10,7 +10,7 @@ Contact: abnermouke@outlook.com
     $console_configs = (new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get();
 @endphp
 <head>
-    <title>登录 - {{ $console_configs['APP_TITLE'] }}</title>
+    <title>登录 - {{ $console_configs['APP_NAME'] }}</title>
     <meta charset="utf-8" />
     <meta name="description" content="{{ $console_configs['APP_DESCRIPTION'] }}" />
     <meta name="keywords" content="{{ implode(',', object_2_array($console_configs['APP_KEYWORDS'])) }}" />
@@ -60,7 +60,7 @@ Contact: abnermouke@outlook.com
                 <div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 my-auto mx-auto" id="sign-in_box">
                     <form class="form w-100" id="sign-in_form" method="post" onsubmit="autoLogin($(this));return false;" data-query-login="{{ route('pros.console.oauth.sign.in') }}" data-redirect-uri="{{ $redirect_uri }}">
                         <div class="text-center mb-10">
-                            <h1 class="text-dark mb-3">{!! $console_configs['APP_TITLE'] !!}</h1>
+                            <h1 class="text-dark mb-3">{!! $console_configs['APP_NAME'] !!}</h1>
                             <div class="text-gray-400 fw-bold fs-8">
                                 {!! $console_configs['APP_DESCRIPTION'] !!}
                             </div>

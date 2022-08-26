@@ -13,7 +13,7 @@
 
         <div class="d-flex align-items-center flex-grow-1 flex-lg-grow-0">
             <a href="javascript:;" class="d-lg-none fs-3 text-dark fw-bold">
-                {{ (new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get('APP_TITLE', 'Pros 控制台管理系统') }}
+                {{ (new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get('APP_NAME', 'Pros 控制台管理系统') }}
             </a>
         </div>
         <div class="aside-toggle align-items-center d-none d-lg-flex me-3 active cursor-pointer" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="aside-minimize">

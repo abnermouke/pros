@@ -16,7 +16,7 @@
         ->setTitle('系统配置')
         ->setDescription('<i class="fa fa-info-circle text-success me-4"></i>温馨提示：更改App应用相关配置，系统将在一定时间内自动更新并开始使用最新配置进行执行操作。')
         ->setItems(function (\Abnermouke\Pros\Builders\Form\Tools\FormItemBuilder $builder) {
-            $builder->input('APP_TITLE', '应用/站点名称')->required();
+            $builder->input('APP_NAME', '应用/站点名称')->required();
             $builder->textarea('APP_DESCRIPTION', '应用/站点描述')->required();
             $builder->tags('APP_KEYWORDS', '应用/站点关键词')->required();
             $builder->image('APP_LOGO', 'LOGO')->size('500x500')->dictionary('configs/images')->required();
@@ -45,7 +45,7 @@
             $builder->input('AMAP_WEB_SERVER_API_KEY', '高德地图WEB服务API KEY')->clipboard();
         })
         ->setTabs(function (\Abnermouke\Pros\Builders\Form\Tools\FormTabBuilder $builder) {
-            $builder->create('基本配置')->group(['APP_TITLE', 'APP_DESCRIPTION', 'APP_KEYWORDS'])->group(['APP_SHORTCUT_ICON', 'APP_LOGO']);
+            $builder->create('基本配置')->group(['APP_NAME', 'APP_DESCRIPTION', 'APP_KEYWORDS'])->group(['APP_SHORTCUT_ICON', 'APP_LOGO']);
             $builder->create('自动化配置')->group(['SMS_SECOND_FREQUENCY_LIMIT', 'SMS_DAY_FREQUENCY_LIMIT', 'SMS_UNIVERSAL_CODE', 'SMS_DEFAULT_GATEWAYS'], '短信配置')->group(['TEMPORARY_FILES_AUTO_DELETE_SECOND_LIMIT']);
             $builder->create('服务商配置')->group(['QINIU_SYNC_AUTO', 'QINIU_PARAMS__domain', 'QINIU_PARAMS__access_key', 'QINIU_PARAMS__access_secret', 'QINIU_PARAMS__bucket', 'QINIU_PARAMS__visibility'], '七牛云储存')->group(['CONSOLE_WECHAT_OAUTH', 'WECHAT_OFFICE_ACCOUNT_PARAMS__app_id', 'WECHAT_OFFICE_ACCOUNT_PARAMS__secret', 'WECHAT_OFFICE_ACCOUNT_PARAMS__token', 'WECHAT_OFFICE_ACCOUNT_PARAMS__aes_key'])->group(['SMS_ALI_PARAMS__access_key_id', 'SMS_ALI_PARAMS__access_key_secret', 'SMS_ALI_PARAMS__sign_name'], '阿里云短信配置')->group(['AMAP_WEB_SERVER_API_KEY']);
             $builder->create('相关协议')->group(['PRIVACY_POLICY', 'USER_AGREEMENT']);

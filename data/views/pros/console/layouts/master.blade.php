@@ -7,7 +7,7 @@ Contact: abnermouke@outlook.com
 -->
 <html lang="{{ config('app.locale', 'zh') == 'zh-cn' ? 'zh' : config('app.locale', 'zh') }}">
     <head>
-        <title>@yield('title', '控制台') - {{ (new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get('APP_TITLE', 'PROS') }}</title>
+        <title>@yield('title', '控制台') - {{ (new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get('APP_NAME', 'PROS') }}</title>
         <meta charset="utf-8" />
         <meta name="description" content="{{ (new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get('APP_DESCRIPTION', 'PROS') }}" />
         <meta name="keywords" content="{{ implode(',', (new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get('APP_KEYWORDS', [])) }}" />

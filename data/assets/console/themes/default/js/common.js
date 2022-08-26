@@ -457,7 +457,7 @@ function buildRequest(query_url, params, method, is_ajax, callback, fail_callbac
 function checkNumberOrString($value)
 {
     //判断是否为数字
-    if ($.isNumeric($value) && $value !== 0 && $value.length > 0 && $value.substr(0, 1) !== '0') {
+    if ($.isNumeric($value) && $value !== 0 && $value.length > 0 && $value.length <= 10 && $value.substr(0, 1) !== '0') {
         //返回value数值型
         return Number($value);
     }

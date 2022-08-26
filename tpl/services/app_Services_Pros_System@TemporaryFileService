@@ -39,11 +39,12 @@ class TemporaryFileService extends BaseService
      * @Time __TIME__
      * @param $links string|array 文件地址
      * @param string $storage_disk  储存驱动
+     * @param bool $clear_local 清除本地文件
      * @param mixed $return 返回类型 array 数组   string 字符串
      * @return array|bool
      * @throws \Exception
      */
-    public function enable($links, $storage_disk = 'public', $return = false)
+    public function enable($links, $storage_disk = 'public', $clear_local = true, $return = false)
     {
         //获取类型
         $return = $return ? $return : (is_array($links) ? 'array' : 'string');
@@ -69,7 +70,7 @@ class TemporaryFileService extends BaseService
                     }
                 } else {
                     //判断是否为本地地址（非本站地址不处理）
-                    if (strstr($link, $storage_base_path)) {
+                    if ($clear_local && strstr($link, $storage_base_path)) {
                         //删除当前文件
                         unset($links[$k]);
                     }
@@ -79,7 +80,6 @@ class TemporaryFileService extends BaseService
         //返回成功
         return $this->success($return === 'array' ? $links : ($links ? implode(',', $links) : $links));
     }
-
 
     /**
      * 创建临时文件信息

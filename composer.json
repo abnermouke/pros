@@ -19,7 +19,6 @@
         "abnermouke/easy-builder": "*",
         "intervention/image": "*",
         "maatwebsite/excel": "*",
-        "overtrue/laravel-wechat": "^5.0",
         "overtrue/laravel-pinyin": "*",
         "overtrue/easy-sms": "*",
         "guzzlehttp/guzzle": "^7.4"

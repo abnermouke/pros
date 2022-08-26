@@ -68,7 +68,7 @@ class CreateProsSystemConfigsTable extends Migration
         $repository = new ConfigRepository();
         //默认数据处理逻辑
         $repository->insertAll([
-            ['alias' => 'APP_TITLE', 'description' => '应用标题', 'content' => 'Pros控制台管理系统', 'created_at' => auto_datetime(), 'updated_at' => auto_datetime()],
+            ['alias' => 'APP_NAME', 'description' => '应用名称', 'content' => 'Pros控制台', 'created_at' => auto_datetime(), 'updated_at' => auto_datetime()],
             ['alias' => 'APP_DESCRIPTION', 'description' => '应用描述', 'content' => 'abnermouke/pros - Pros是Abnermouke倾心打造的一款高效的Laravel项目启动方案，无需重复构建基础结构/框架，开发高效，体验优良！', 'created_at' => auto_datetime(), 'updated_at' => auto_datetime()],
             ['alias' => 'APP_KEYWORDS', 'description' => '应用关键词', 'content' => ['abnermouke@outlook.com', 'abnermouke/pros', '控制台', '管理后台'], 'created_at' => auto_datetime(), 'updated_at' => auto_datetime()],
             ['alias' => 'APP_LOGO', 'description' => '应用LOGO图片', 'content' => proxy_assets('static/medias/logos/logo-square.png', 'pros'), 'created_at' => auto_datetime(), 'updated_at' => auto_datetime()],
