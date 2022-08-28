@@ -218,6 +218,31 @@ $.table_builder = {
                     });
                     break;
                 default:
+                    //判断是否绑定checkbox
+                    if (typeof(bind_checkbox) !== 'undefined' && parseInt(bind_checkbox) === 1) {
+                        //设置选中信息
+                        var checkbox_values = [];
+                        //循环所有checkbox
+                        $("#pros_table_"+sign+"_tbody").find('input.pros_table_'+sign+'_select_item:checked').each(function () {
+                            //添加value
+                            checkbox_values.push($(this).val());
+                        });
+                        //查询长度
+                        if (checkbox_values.length <= 0) {
+                            //提示错误
+                            alertToast('请至少选择一项后操作', 2000, 'warning');
+                            //返回失败
+                            return false;
+                        }
+                        //判断链接
+                        if (params['query_url'].indexOf('?') === -1) {
+                            //追加信息
+                            params['query_url'] += '?' + $("#pros_table_"+sign+"_box").attr('data-checkbox-field') + '=' + checkbox_values.join('-');
+                        } else {
+                            //追加信息
+                            params['query_url'] += '&' +  $("#pros_table_"+sign+"_box").attr('data-checkbox-field') + '=' + checkbox_values.join('-');
+                        }
+                    }
                     //判断是否新开页面
                     if (params['target']) {
                         //新开页面跳转
