@@ -28,7 +28,7 @@
                         <input class="form-control form-control-solid pros_form_{{ $sign }}_item_{{ $field }}_values_item" type="{{ data_get($column, 'input_type', 'text') }}" data-type="{{ $column['type'] }}" data-key="{{ $column['key'] }}" placeholder="请输入{{ $column['guard_name'] }}">
                         @break
                         @case('select')
-                        <select class="form-control form-control-solid value_append_item pros_form_{{ $sign }}_item_{{ $field }}_values_item" {{ $column['multiple'] ? 'multiple' : '' }} data-control="select2" data-type="{{ $column['type'] }}" data-key="{{ $column['key'] }}"  data-placeholder="请选择{{ $column['guard_name'] }}">
+                        <select class="form-control form-control-solid value_append_item pros_form_{{ $sign }}_item_{{ $field }}_values_item" {{ $column['multiple'] ? 'multiple' : '' }} data-type="{{ $column['type'] }}" data-key="{{ $column['key'] }}"  data-placeholder="请选择{{ $column['guard_name'] }}">
                             @foreach($column['options'] as $value => $name)
                                 <option value="{{ $value }}">{{ $name}}</option>
                             @endforeach
