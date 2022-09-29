@@ -2047,7 +2047,7 @@ $.form_builder = {
                                 //判断是否存在价格系数
                                 var price_ratio = target_object.attr('data-price-ratio');
                                 //判断状态
-                                if (typeof input_value == 'number' && typeof (price_ratio) !== 'undefined' && price_ratio.length > 0 && parseInt(price_ratio) > 0) {
+                                if ($.isNumeric(input_value) && typeof (price_ratio) !== 'undefined' && price_ratio.length > 0 && parseInt(price_ratio) > 0) {
                                     //计算值
                                     input_value = parseInt(parseFloat(input_value) * parseInt(price_ratio));
                                 } else {

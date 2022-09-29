@@ -254,6 +254,7 @@ php artisan builder:pros
 
 - 修复Form表单构建 Values 模块存在select选项时被多次渲染问题
 - 修复Pros默认微信授权登录失败逻辑
+- 修复后台构建器金额处理时小与1会被强制转换为0的问题 
 
 ## License
 
