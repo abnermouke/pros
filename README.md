@@ -250,9 +250,10 @@ php artisan builder:pros
 - 新增Form表单构建 select 选择框模块可多选功能，调用builder的multiple方法即可
 - 其他已知问题修复
 
-2022.09.17 - 修复已知问题
+2022.09.30 - 修复已知问题
 
 - 修复Form表单构建 Values 模块存在select选项时被多次渲染问题
+- 修复Pros默认微信授权登录失败逻辑
 
 ## License
 

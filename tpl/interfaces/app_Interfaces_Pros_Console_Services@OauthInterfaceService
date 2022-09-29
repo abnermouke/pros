@@ -25,6 +25,7 @@ use App\Services\Pros\Console\AdminOauthSignatureService;
 use App\Services\Pros\System\TemporaryFileService;
 use EasyWeChat\Factory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -184,13 +185,8 @@ class OauthInterfaceService extends BaseService
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      * @throws \Exception
      */
-    public function wechat_qrcode_oauth($signature, $request)
+    public function wechat_qrcode_oauth($signature)
     {
-        //判断是否引入easywechat
-        if (!File::exists('vendor/overtrue/laravel-wechat')) {
-            //返回失败
-            return pros_console_abort_error(CodeLibrary::DATA_MISSING, '请联系开发者引入：overtrue/laravel-wechat支持');
-        }
         //获取配置
         $config = (new ConfigCacheHandler())->get('WECHAT_OFFICE_ACCOUNT_PARAMS', []);
         //实例化应用
@@ -198,7 +194,7 @@ class OauthInterfaceService extends BaseService
         //获取授权链接
         $redirect = $app->oauth->redirect(route('pros.console.oauth.wechat.signature.callback', ['signature' => $signature]));
         //返回跳转链接
-        return redirect($redirect);
+        return redirect($redirect->getTargetUrl());
     }
 
     /**
@@ -249,11 +245,6 @@ class OauthInterfaceService extends BaseService
      */
     public function wechat_qrcode_callback($signature, $code)
     {
-        //判断是否引入easywechat
-        if (!File::exists('vendor/overtrue/laravel-wechat')) {
-            //返回失败
-            return $this->fail(CodeLibrary::DATA_MISSING, '请联系开发者引入：overtrue/laravel-wechat支持');
-        }
         //查询签名状态
         if (!$oauth = (new AdminOauthSignatureRepository())->row(compact('signature'))) {
             //返回失败
@@ -267,7 +258,7 @@ class OauthInterfaceService extends BaseService
         //获取配置
         $config = (new ConfigCacheHandler())->get('WECHAT_OFFICE_ACCOUNT_PARAMS', []);
         //获取微信授权信息
-        if (!$user = Factory::officialAccount($config)->oauth->userFromCode($code)) {
+        if (!$user = Factory::officialAccount($config)->oauth->user()) {
             //返回失败
             return $this->fail(CodeLibrary::NETWORK_ERROR, '授权失败');
         }
@@ -278,7 +269,7 @@ class OauthInterfaceService extends BaseService
                 //查询OPEN-ID是否已存在
                 if ($admin_id = (new AdminRepository())->find(['wechat_open_id' => $user->getId()], 'id')) {
                     //设置管理员ID
-                    (new AdminOauthSignatureRepository())->update(['id' => (int)$oauth['id']], ['admin_id' => (int)$admin_id, 'status' => AdminOauthSignatures::STATUS_ENABLED, 'results' => $user->getRaw(), 'updated_at' => auto_datetime()]);
+                    (new AdminOauthSignatureRepository())->update(['id' => (int)$oauth['id']], ['admin_id' => (int)$admin_id, 'status' => AdminOauthSignatures::STATUS_ENABLED, 'results' => $user->getAttributes(), 'updated_at' => auto_datetime()]);
                 } else {
                     //返回失败
                     return $this->fail(CodeLibrary::DATA_MISSING, '如需申请管理员身份，请先联系平台！');
@@ -294,6 +285,11 @@ class OauthInterfaceService extends BaseService
                     'email' => $user->getEmail(),
                     'updated_at' => auto_datetime(),
                 ];
+                //判断openid是否已被绑定
+                if ((new AdminRepository())->exists(Arr::only($admin, 'wechat_open_id'))) {
+                    //返回失败
+                    return $this->fail(CodeLibrary::WITH_DO_NOT_ALLOW_STATE, '该微信已被其他管理员绑定');
+                }
                 //判断是否存在邮箱
                 if (empty($admin['email'])) {
                     //移除邮箱
@@ -301,6 +297,7 @@ class OauthInterfaceService extends BaseService
                 }
                 //更新授权信息
                 (new AdminOauthSignatureRepository())->update(['id' => (int)$oauth['id']], ['status' => AdminOauthSignatures::STATUS_ENABLED, 'results' => $admin, 'updated_at' => auto_datetime()]);
+                (new AdminRepository())->update(['id' => (int)$oauth['admin_id']], $admin);
                 break;
         }
         //返回成功
