@@ -74,11 +74,11 @@
     </div>
 </div>
 <script>
-    window.onload = function () {
+    $(function () {
         //引入实例对象
         createExtraJs('{{ proxy_assets('console/themes/default/builder/form-builder.js', 'pros') }}', $.form_builder, function () {
             //创建处理实例对象
             $.form_builder.init('{{ $sign }}');
         });
-    };
+    });
 </script>

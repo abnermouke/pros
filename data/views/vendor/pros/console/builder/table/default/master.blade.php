@@ -117,11 +117,11 @@
     </div>
 </div>
 <script>
-    window.onload = function () {
+    $(function () {
         //引入实例对象
         createExtraJs('{{ proxy_assets('console/themes/default/builder/table-builder.js', 'pros') }}', $.table_builder, function () {
             //创建处理实例对象
             $.table_builder.init('{{ $sign }}');
         });
-    };
+    })
 </script>

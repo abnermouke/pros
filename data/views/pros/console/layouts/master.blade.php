@@ -37,7 +37,7 @@ Contact: abnermouke@outlook.com
         @yield('styles')
     </head>
     <body id="pros_body" class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed aside-enabled aside-fixed" style="--kt-toolbar-height:55px;--kt-toolbar-height-tablet-and-mobile:55px" data-kt-aside-minimize="on">
-        <div class="d-none" id="kt_permission_nodes_box">{!! json_encode((new \App\Repository\Pros\Console\NodeRepository())->pluck('alias'), JSON_UNESCAPED_UNICODE) !!}</div>
+    <div class="d-none" id="kt_permission_nodes_box">{!! json_encode((new \App\Handler\Cache\Data\Pros\Console\RoleCacheHandler(current_auth('role_id', config('pros.session_prefix'))))->currentPermissions(), JSON_UNESCAPED_UNICODE) !!}</div>
         <div class="d-flex flex-column flex-root">
             <div class="page d-flex flex-row flex-column-fluid">
                 {{-- 引入左侧菜单栏 --}}

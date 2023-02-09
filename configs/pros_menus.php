@@ -32,7 +32,7 @@ return [
                         'guard_name' => '首页',
                         'handler' => '',
                         'route' => ['name' => 'pros.console.index', 'params' => []],
-                        'permission_nodes' => [],
+                        'permission_nodes' => ['get@pros.console.index', 'get@pros.console.default'],
                         'icon' => 'fa fa-home',
                     ],
                     [

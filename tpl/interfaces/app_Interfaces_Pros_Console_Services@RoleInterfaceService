@@ -220,6 +220,8 @@ class RoleInterfaceService extends BaseService
             //添加日志
             (new AdminLogService())->record('更新管理员权限角色信息', compact('id'));
         }
+        //刷新权限角色缓存
+        (new RoleCacheHandler($id))->refresh();
         //返回成功
         return $this->success(compact('id'));
     }
@@ -248,6 +250,8 @@ class RoleInterfaceService extends BaseService
         }
         //记录日志
         (new AdminLogService())->record('更改管理员权限角色为：'.$data['text'], $data);
+        //刷新权限角色缓存
+        (new RoleCacheHandler($id))->refresh();
         //返回成功
         return $this->success(compact('id'));
     }

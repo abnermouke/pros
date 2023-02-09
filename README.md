@@ -160,6 +160,7 @@ public function boot()
     protected $except = [
         
         //其他例外
+        
     
         'pros/console/uploader/*'
     ];

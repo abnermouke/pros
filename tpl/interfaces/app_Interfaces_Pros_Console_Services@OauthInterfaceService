@@ -135,7 +135,7 @@ class OauthInterfaceService extends BaseService
             $auth['nickname_abbr'] = pinyin_abbr($auth['nickname_abbr']);
         }
         //整理大写
-        $auth['nickname_abbr'] = strtoupper($auth['nickname_abbr']);
+        $auth['nickname_abbr'] = mb_strtoupper($auth['nickname_abbr']);
         //设置session
         set_current_auth($auth, config('pros.session_prefix', 'abnermouke:pros:console:auth'));
         //返回信息
