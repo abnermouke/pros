@@ -34,7 +34,7 @@ class IndexController extends BaseController
     public function index(Request $request, IndexInterfaceService $service)
     {
         //判断路由名称
-        if ($request->route()->getName() == 'default') {
+        if ($request->route()->getName() == 'pros.console.default' || $request->route()->getName() == 'pros.console.entry') {
             //跳转首页
             return redirect(route('pros.console.index'));
         }

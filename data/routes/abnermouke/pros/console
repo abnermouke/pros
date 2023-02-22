@@ -3,6 +3,9 @@
 
 use Illuminate\Support\Facades\Route;
 
+//首页入口路由
+Route::get('', 'IndexController@index')->name('pros.console.entry');
+
 //设置Pros - console基础前缀与路由
 Route::group(['as' => 'pros.console.', 'prefix' => 'pros/console'], function () {
 
