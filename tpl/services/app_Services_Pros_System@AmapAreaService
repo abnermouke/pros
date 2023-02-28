@@ -11,8 +11,7 @@ namespace App\Services\Pros\System;
 
 use Abnermouke\EasyBuilder\Library\CodeLibrary;
 use Abnermouke\EasyBuilder\Module\BaseService;
-use App\Handler\Cache\Data\Pros\System\ConfigCacheHandler;
-use App\Implementers\AmapAreaImplementers;
+use App\Repository\Pros\System\AmapAreaRepository;
 
 /**
  * 高德地图行政地区逻辑服务容器
@@ -29,26 +28,55 @@ class AmapAreaService extends BaseService
     */
     public function __construct($pass = false) { parent::__construct($pass); }
 
+
     /**
-     * 同步最新高德地区行政地区信息
+     * 刷新json文件
      * @Author Abnermouke <abnermouke@outlook.com>
      * @Originate in Abnermouke's MBP
      * @Time __TIME__
      * @return array|bool
-     * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Exception
      */
-    public function sync()
+    public function refreshJson()
     {
-        //同步最新行政地区
-        if (!AmapAreaImplementers::run((new ConfigCacheHandler())->get('AMAP_WEB_SERVER_API_KEY'))) {
-            //返回失败
-            return $this->fail(CodeLibrary::CODE_LOGIC_ERROR, '数据同步失败');
+        //整理文件地址
+        $json_path = public_path('static/jsons/tools/areas.json');
+        //获取地址结构
+        $areas = $this->getAreasTree();
+        //设置json文件
+        set_json_file_content($json_path, $areas);
+        //返回访问链接
+        return $this->success(['link' => proxy_assets('jsons/tools/areas.json', 'static')]);
+    }
+
+    /**
+     * 获地址结构
+     * @Author Abnermouke <abnermouke@outlook.com>
+     * @Originate in Abnermouke's MBP
+     * @Time __TIME__
+     * @param $parent_id
+     * @param $data
+     * @return array|mixed
+     * @throws \Exception
+     */
+    private function getAreasTree($parent_id = 100, $data = [])
+    {
+        //查询全部可用子集
+        if ($sub_areas = (new AmapAreaRepository())->get(['parent_id' => (int)$parent_id], ['id', 'guard_name'], [], ['sub_area_count' => 'desc'])) {
+            //循环子集
+            foreach ($sub_areas as $k => $area) {
+                //获取子集
+                if ($subs = $this->getAreasTree((int)$area['id'])) {
+                    //设置子集
+                    $area['subs'] = $subs;
+                }
+                //设置数据
+                $data[(int)$area['id']] = $area;
+                //释放内存
+                unset($sub_areas[$k]);
+            }
         }
-
-        //TODO : 如对行政地址库做特殊处理，请单独使用表进行处理，避免影响同步结构
-
-        //返回成功
-        return $this->success(['time' => auto_datetime()]);
+        //返回结构
+        return $data;
     }
 }

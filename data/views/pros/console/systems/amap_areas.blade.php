@@ -16,14 +16,18 @@
             <div class="mb-13">
                 <div class="mb-15">
                     <h4 class="fs-2x text-gray-800 w-bolder mb-6">中华人民共和国</h4>
-                    @if($updated_at = (new \App\Repository\Pros\System\AmapAreaRepository())->max('updated_at'))<p class="fs-sm-7 text-primary">行政地区数据最新同步时间：{{ @$updated_at }}</p>@endif
+                    @if($updated_at = (new \App\Repository\Pros\System\AmapAreaRepository())->max('updated_at'))
+                        <p class="fs-sm-7 text-primary">行政地区数据最新同步时间：{{ @$updated_at }}</p>
+                    @else
+                        @if((new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get('AMAP_WEB_SERVER_API_KEY', ''))<p class="fs-sm-7 text-danger">行政区域正在同步，预计10分钟内完成...</p>@endif
+                    @endif
                     <p class="fw-bold fs-4 text-gray-600 mb-2">行政区划是国家为便于行政管理而分级划分的区域，因此行政区划亦称行政区域，中华人民共和国的行政区划由省级行政区、地级行政区、县级行政区、乡级行政区组成。</p>
                 </div>
                 <div class="row mb-12">
                     @if(!(new \App\Handler\Cache\Data\Pros\System\ConfigCacheHandler())->get('AMAP_WEB_SERVER_API_KEY', ''))
                         {!!
                             \Abnermouke\Pros\Builders\Form\FormBuilder::make()
-                            ->setSubmit(route('pros.console.systems.amap.sync'), '信息提交无误后将自动获取最新行政地区信息，该过程可能将持续3-5分钟，请勿离开本页面，是否继续操作？', '提交并立即同步')
+                           ->setSubmit(route('pros.console.systems.amap.sync'), '信息提交无误后将在10分钟内自动获取最新行政地区信息，是否继续操作？', '提交并开始同步')
                             ->setItems(function (\Abnermouke\Pros\Builders\Form\Tools\FormItemBuilder $builder) {
                                 $builder->input('AMAP_WEB_SERVER_API_KEY', '高德地图Server服务Api Key')->placeholder('请输入高德地图Server服务Api Key')->description('高德Web服务API向开发者提供HTTP接口，通过这些接口使用各类型的地理数据服务，可点击链接 <a href="https://lbs.amap.com/api/webservice/guide/create-project/get-key" target="_blank">https://lbs.amap.com/api/webservice/guide/create-project/get-key</a> 根据提示进行操作。')->required()->clipboard();
                             })

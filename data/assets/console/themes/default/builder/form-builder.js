@@ -293,6 +293,9 @@ $.form_builder = {
                     if (typeof (dropdown_modal_id) !== 'undefined' && dropdown_modal_id.length > 0) {
                         //添加参数
                         select2_options.dropdownParent = $("#"+dropdown_modal_id);
+                    } else {
+                        //添加默认
+                        select2_options.dropdownParent = $("#"+form.attr('id'));
                     }
                     //设置select2
                     target_object.select2(select2_options);
@@ -307,6 +310,9 @@ $.form_builder = {
                     if (typeof (dropdown_modal_id) !== 'undefined' && dropdown_modal_id.length > 0) {
                         //添加参数
                         select2_options.dropdownParent = $("#"+dropdown_modal_id);
+                    } else {
+                        //添加默认
+                        select2_options.dropdownParent = $("#"+form.attr('id'));
                     }
                     //设置select2
                     $("#pros_form_"+sign+"_item_specs_"+field+"_spec_selector").select2(select2_options);
@@ -335,6 +341,9 @@ $.form_builder = {
                     if (typeof (dropdown_modal_id) !== 'undefined' && dropdown_modal_id.length > 0) {
                         //添加参数
                         icon_options.dropdownParent = $("#"+dropdown_modal_id);
+                    } else {
+                        //添加默认
+                        icon_options.dropdownParent = $("#"+form.attr('id'));
                     }
                     //设置select2
                     target_object.select2(icon_options);
@@ -1629,6 +1638,9 @@ $.form_builder = {
                     if (typeof (dropdown_modal_id) !== 'undefined' && dropdown_modal_id.length > 0) {
                         //添加参数
                         select2_options.dropdownParent = $("#"+dropdown_modal_id);
+                    } else {
+                        //添加默认
+                        select2_options.dropdownParent = $("#"+form.attr('id'));
                     }
                     //设置select2
                     values_box.find('select.value_default_item').select2(select2_options);

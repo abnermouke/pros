@@ -114,16 +114,16 @@ $.table_builder = {
                         var modal_object = $("#"+bind_form_modal_target);
                         //显示弹窗
                         new bootstrap.Modal(modal_object[0], {backdrop: 'static', keyboard: false}).show();
-                        //引入实例对象
-                        createExtraJs(table.attr('data-source-path')+'/form-builder.js', $.form_builder, function () {
-                            //获取表单标识
-                            var form_sign = modal_object.find('.pros_form_builder').attr('data-sign');
-                            //创建处理实例对象
-                            $.form_builder.init(form_sign, function () {
-                                //设置表单与modal结合
-                                $.form_builder.containWithModal(form_sign, bind_form_modal_target);
-                            });
-                        });
+                        // //引入实例对象
+                        // createExtraJs(table.attr('data-source-path')+'/form-builder.js', $.form_builder, function () {
+                        //     //获取表单标识
+                        //     var form_sign = modal_object.find('.pros_form_builder').attr('data-sign');
+                        //     //创建处理实例对象
+                        //     $.form_builder.init(form_sign, function () {
+                        //         //设置表单与modal结合
+                        //         $.form_builder.containWithModal(form_sign, bind_form_modal_target);
+                        //     });
+                        // });
                         //关闭弹窗事件触发
                         modal_object.on('hidden.bs.modal', function () {
                             //删除当前modal

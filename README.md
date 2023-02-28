@@ -6,7 +6,7 @@
 
 ----
 
-最后更新时间：2022年09月17日，持续更新中！！！
+最后更新时间：2023年02月28日，持续更新中！！！
 
 ---
 
@@ -197,7 +197,8 @@ composer dump-autoload
         //
         
         
-        \App\Console\Commands\Pros\Tasks\TemporaryFileCommand::class
+        \App\Console\Commands\Pros\Tasks\TemporaryFileCommand::class,
+        \App\Console\Commands\Pros\Tasks\QueryAmapAreaCommand::class,
     ];
 
   
@@ -208,6 +209,8 @@ composer dump-autoload
         
         //每五分钟清除过期文件
         $schedule->command('temporary_file:clear')->everyFiveMinutes();
+        //每五分钟查询高德最新地图信息
+        $schedule->command('amap:query')->everyFiveMinutes();
     }
 ```
 
@@ -256,6 +259,12 @@ php artisan builder:pros
 - 修复Form表单构建 Values 模块存在select选项时被多次渲染问题
 - 修复Pros默认微信授权登录失败逻辑
 - 修复后台构建器金额处理时小与1会被强制转换为0的问题 
+
+2023.02.28 - 优化内容与修复已知问题
+
+- 新增QueryAmapAreaCommand命令，用于同步高德地图行政地区数据
+- 修复form-builder.js图片选择弹两次窗口的问题
+- 新增UpdateCommand命令，用于设置内容更新后强制同步等一系列操作
 
 ## License
 

@@ -58,12 +58,7 @@ class AmapAreaInterfaceService extends BaseService
             //刷新缓存
             (new ConfigCacheHandler())->refresh();
         }
-        //继续同步
-        if (!($service = new AmapAreaService())->sync()) {
-            //返回错误
-            return $this->fail($service->getCode(), $service->getMessage());
-        }
         //返回成功
-        return $this->success($service->getResult());
+        return $this->success(['time' => auto_datetime()]);
     }
 }
